@@ -23,11 +23,11 @@ Kubelini does not match "Kubernetes the hard way" 100%, there are slight differe
 5. Doesn't assume GCE. You can run Kubelini anywhere. The only opinionated piece is the s3 bucket used for exchanging files.
 
 ### Ansible implementation
-Kubelini attempts to not use anything "spesial" in terms of Ansible functionality. The roles included should be very easy to integrate into an existing Ansible setup, and there's no special "bootstrap script". Simply run "ansible-playbook site.yml" as you're used to.
+Kubelini attempts to not use anything "special" in terms of Ansible functionality. The roles included should be very easy to integrate into an existing Ansible setup, and there's no special "bootstrap script". Simply run "ansible-playbook site.yml" as you're used to. The `ansible.cfg` file just points to the local role dir and is really not needed if you don't want it. Same goes for the inventory file (`hosts`).
 
 It's worth noting that the inventory group names _are_ referenced a few places inside roles (to figure out the first cluster node ip, etc). If you want to use other group names, then you should do a search+replace in all roles.
 
-All variables can be controlled using group_vars/all.yml. Also, be sure to create / fill inn the following variables in the file `secrets/secrets.yml`
+All variables can be controlled using group_vars/all.yml. Also, be sure to create / fill inn the following variables in the file `secrets/secrets.yml`:   
 - `aws_access_key_id`
 - `aws_secret_access_key`
 
