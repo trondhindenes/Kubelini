@@ -26,6 +26,10 @@ Kubelini attempts to not use anything "spesial" in terms of Ansible functionalit
 
 It's worth noting that the inventory group names _are_ referenced a few places inside roles (to figure out the first cluster node ip, etc). If you want to use other group names, then you should do a search+replace in all roles.
 
+All variables can be controlled using group_vars/all.yml. Also, be sure to create / fill inn the following variables in the file `secrets/secrets.yml`
+- `aws_access_key_id`
+- `aws_secret_access_key`
+
 ### TODO
 - Implement better change tracking: Some of the tasks performed (such as kubelet registration) are not properly idempodent, and will currently execute everytime the playbook is run. 
 - Smoother kubernetes api interaction: For now we just fire stuff at kubernetes using kubectl. A "native" Kubernetes module for Ansible is being developed, so watch this space!
