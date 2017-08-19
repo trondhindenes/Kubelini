@@ -1,0 +1,53 @@
+- name: create ca downloads folder
+  file:
+    dest: /opt/kubelini/pki_downloads
+    state: directory
+
+- name: create downloads folder
+  file:
+    dest: /opt/kubelini/downloads
+    state: directory
+
+- name: Get the node cert files
+  s3:
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+    bucket: "{{ s3_sync_bucket }}"
+    object: "/pki/{{ item }}"
+    dest: /opt/kubelini/pki_downloads/{{ item }}
+    mode: get
+  with_items:
+  - "{{ inventory_hostname }}-key.pem"
+  - "{{ inventory_hostname }}.csr"
+  - "{{ inventory_hostname }}.pem"
+
+- name: Get the ca file
+  s3:
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+    bucket: "{{ s3_sync_bucket }}"
+    object: "/ca/ca.pem"
+    dest: /opt/kubelini/pki_downloads/ca.pem
+    mode: get
+
+- name: Get the ca key file
+  s3:
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+    bucket: "{{ s3_sync_bucket }}"
+    object: "/ca/ca-key.pem"
+    dest: /opt/kubelini/pki_downloads/ca-key.pem
+    mode: get
+
+- name: Get the kubeconfig files
+  s3:
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+    bucket: "{{ s3_sync_bucket }}"
+    object: "/bootstrap/{{ item }}"
+    dest: "/opt/kubelini/downloads/{{ item }}"
+    mode: get
+  with_items:
+  - "bootstrap.kubeconfig"
+  - "kube-proxy.kubeconfig"
+  - "token.csv"

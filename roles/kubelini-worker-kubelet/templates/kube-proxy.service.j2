@@ -1,0 +1,16 @@
+[Unit]
+Description=Kubernetes Kube Proxy
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+[Service]
+ExecStart=/usr/bin/kube-proxy \
+  --cluster-cidr={{ cluster_cidr }} \
+  --masquerade-all=true \
+  --kubeconfig=/var/lib/kube-proxy/kube-proxy.kubeconfig \
+  --proxy-mode=iptables \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

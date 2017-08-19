@@ -1,0 +1,28 @@
+- name: create folder for deployments
+  file:
+    dest: /opt/kubelini/deployments
+    state: directory
+
+- name: template weave deployment
+  template:
+    src: weavenet-config.yml.j2
+    dest: /opt/kubelini/deployments/weavenet-config.yml
+
+#- name: apply weave deployment
+#  shell: kubectl apply -f /opt/kubelini/deployments/weavenet-config.yml
+
+- name: template dns service
+  template:
+    src: dns-service.yml.j2
+    dest: /opt/kubelini/deployments/dns-service.yml
+
+#- name: apply dns service
+#  shell: kubectl apply -f /opt/kubelini/deployments/dns-service.yml
+
+- name: template dns deployment
+  template:
+    src: dns-deployment.yml.j2
+    dest: /opt/kubelini/deployments/dns-deployment.yml
+
+#- name: apply dns deployment
+#  shell: kubectl apply -f /opt/kubelini/deployments/dns-deployment.yml

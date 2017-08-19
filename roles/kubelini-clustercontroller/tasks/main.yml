@@ -1,0 +1,77 @@
+- name: Copy kubernetes files into the bin folder
+  copy:
+    src: "{{ item }}"
+    dest: /usr/bin/
+    mode: a+x
+    remote_src: yes
+  with_items:
+  - "/opt/kubelini/kube-apiserver"
+  - "/opt/kubelini/kube-controller-manager"
+  - "/opt/kubelini/kube-scheduler"
+  - "/opt/kubelini/kubectl"
+
+- name: create kubernetes folder
+  file:
+    dest: /var/lib/kubernetes
+    state: directory
+
+- name: Copy cert files to kubernetes folder
+  copy:
+    src: "/opt/kubelini/pki_downloads/{{ item }}"
+    dest: "/var/lib/kubernetes/{{ item }}"
+    remote_src: yes
+  with_items:
+  - "{{ inventory_hostname }}-key.pem"
+  - "{{ inventory_hostname }}.csr"
+  - "{{ inventory_hostname }}.pem"
+  - ca.pem
+  - ca-key.pem
+
+- name: Copy token file to kubernetes folder
+  copy:
+    src: "/opt/kubelini/downloads/token.csv"
+    dest: "/var/lib/kubernetes/token.csv"
+    remote_src: yes
+
+- name: get local ip address
+  set_fact:
+    local_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    etcd_ips: "{% for h in groups['kubernetes_master'] %}https://{{ hostvars[h]['ansible_default_ipv4']['address'] }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
+- name: template apiserver config
+  template:
+    src: kube-apiserver.service.j2
+    dest: /etc/systemd/system/kube-apiserver.service
+  notify: 
+  - reload kube-apiserver
+
+- name: template controller-manager config
+  template:
+    src: kube-controller-manager.service.j2
+    dest: /etc/systemd/system/kube-controller-manager.service
+  notify: 
+  - reload kube-controller-manager
+
+- name: template kube-scheduler config
+  template:
+    src: kube-scheduler.service.j2
+    dest: /etc/systemd/system/kube-scheduler.service
+  notify: 
+  - reload kube-scheduler
+
+- name: trigger handlers
+  meta: flush_handlers
+
+- name: start kube-controller-manager service
+  service:
+    name: kube-controller-manager
+    state: started
+
+- name: start apiserver service
+  service:
+    name: kube-apiserver
+    state: started
+
+- name: start kube-scheduler service
+  service:
+    name: kube-scheduler
+    state: started

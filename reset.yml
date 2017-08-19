@@ -1,0 +1,8 @@
+---
+- hosts:
+  - kubernetes_master
+  - kubernetes_worker
+  become: yes
+  tasks:
+    - name: reset
+      script: reset.sh

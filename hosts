@@ -1,0 +1,13 @@
+[all]
+[all:vars]
+ansible_ssh_private_key_file=$ANSIBLE_PRIVATE_KEY_FILE
+ansible_user = ubuntu
+
+
+[kubernetes_master]
+kubelini1 ansible_host=10.245.22.206
+kubelini2 ansible_host=10.245.22.208
+
+[kubernetes_worker]
+kubelini3 ansible_host=10.245.22.215
+kubelini4 ansible_host=10.245.22.254

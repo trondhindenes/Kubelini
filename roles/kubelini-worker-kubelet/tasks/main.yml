@@ -1,0 +1,169 @@
+- name: Copy kubernetes worker files into the bin folder
+  copy:
+    src: "{{ item }}"
+    dest: /usr/bin/
+    mode: a+x
+    remote_src: yes
+  with_items:
+  - "/opt/kubelini/kubelet"
+  - "/opt/kubelini/kube-proxy"
+  - "/opt/kubelini/kubectl"
+
+- name: template the bootstrap clusterrole
+  template:
+    src: bootstrap_clusterrole.yml.j2
+    dest: /opt/kubelini/bootstrap_clusterrole.yml
+  delegate_to: "{{ groups.kubernetes_master[0] }}"
+  run_once: true
+
+- name: create the bootstrap clusterrole
+  shell: kubectl apply -f /opt/kubelini/bootstrap_clusterrole.yml
+  delegate_to: "{{ groups.kubernetes_master[0] }}"
+  run_once: true
+
+- name: create kubelet folders
+  file:
+    dest: "{{ item }}"
+    state: directory
+  with_items:
+  - /var/lib/kubelet
+  - /var/lib/kube-proxy
+  - /var/lib/kubernetes
+  - /var/run/kubernetes
+
+- name: copy kube-proxy bootstrap file
+  copy:
+    src: /opt/kubelini/downloads/kube-proxy.kubeconfig
+    dest: /var/lib/kube-proxy/
+    remote_src: yes
+
+- name: copy bootstrap files
+  copy:
+    src: /opt/kubelini/downloads/bootstrap.kubeconfig
+    dest: /var/lib/kubelet/
+    remote_src: yes
+
+- name: copy cert files to kubernetes dir
+  copy:
+    src: "{{ item }}"
+    dest: /var/lib/kubernetes/
+    remote_src: yes
+  with_items:
+  - /opt/kubelini/pki_downloads/ca.pem
+  - "/opt/kubelini/pki_downloads/{{ inventory_hostname }}.pem"
+  - "/opt/kubelini/pki_downloads/{{ inventory_hostname }}-key.pem"
+
+
+- name: create cni folder
+  file:
+    dest: /opt/cni
+    state: directory
+
+- name: download cni plugin
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/network-plugins/cni-amd64-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz
+    dest: /opt/kubelini/cni.tar.gz
+
+- name: unpack cni plugin
+  unarchive:
+    src: /opt/kubelini/cni.tar.gz
+    dest: /opt/cni
+    remote_src: yes
+
+- name: download docker
+  get_url:
+    url: https://get.docker.com/builds/Linux/x86_64/docker-1.12.6.tgz
+    dest: /opt/kubelini/docker.tgz
+
+- name: create docker temp folder
+  file:
+    dest: /opt/kubelini/docker
+    state: directory
+
+- name: unpack docker
+  unarchive:
+    src: /opt/kubelini/docker.tgz
+    dest: /opt/kubelini/docker
+    remote_src: yes
+
+- name: get docker bin files to copy
+  find:
+    paths: "/opt/kubelini/docker/"
+    recurse: yes
+  register: docker_bin_files
+
+- name: copy files to bin
+  copy:
+    src: "{{ item['path'] }}"
+    dest: /usr/bin/
+    remote_src: yes
+    mode: a+x
+  with_items: "{{ docker_bin_files['files'] }}"
+
+- name: template docker service config
+  template:
+    src: docker.service.j2
+    dest: /etc/systemd/system/docker.service
+  notify: 
+  - reload docker service
+
+- name: make sure we have masters in inventory
+  setup:
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['kubernetes_master'] }}"
+
+- name: configure api servers list
+  set_fact:
+    api_servers_list: "{% for h in groups['kubernetes_master'] %}https://{{ hostvars[h]['ansible_default_ipv4']['address'] }}:6443{% if not loop.last %},{% endif %}{% endfor %}"
+
+- name: template kubelet service config (registration)
+  template:
+    src: kubelet.service-reg.j2
+    dest: /etc/systemd/system/kubelet.service
+  register: kubeletchanged
+  notify: 
+  - reload kubelet service
+
+- name: template kube-proxy service config
+  template:
+    src: kube-proxy.service.j2
+    dest: /etc/systemd/system/kube-proxy.service
+  notify: 
+  - reload kube-proxy service
+
+- name: trigger handlers
+  meta: flush_handlers
+
+- name: start docker service
+  service:
+    name: docker
+    state: started
+
+- name: start kube-proxy service
+  service:
+    name: kube-proxy
+    state: started
+
+- name: start kubelet service
+  service:
+    name: kubelet
+    state: started
+
+# A helpful reminder of what to look out for post-update.
+- pause:
+    prompt: "Approve CSRs before continuing"
+  when: kubeletchanged.changed
+
+- name: template reconfigured kubelet service config to use builtin certificates
+  template:
+    src: kubelet.service-run.j2
+    dest: /etc/systemd/system/kubelet.service
+  register: kubeletchanged
+  notify: 
+  - reload kubelet service
+
+- name: start kubelet service
+  service:
+    name: kubelet
+    state: started
+

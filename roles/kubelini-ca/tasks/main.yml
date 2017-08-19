@@ -1,0 +1,139 @@
+- name: create ca folder
+  file:
+    dest: /opt/kubelini/ca
+    state: directory
+
+- name: create bootstrap token folder
+  file:
+    dest: /opt/kubelini/bootstrap_token
+    state: directory
+
+- name: template ca config
+  template:
+    src: ca-config.json.j2
+    dest: /opt/kubelini/ca/ca-config.json
+
+- name: template ca config
+  template:
+    src: ca-csr.json.j2
+    dest: /opt/kubelini/ca/ca-csr.json
+
+- name: Generate ca cert
+  shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
+  args:
+    chdir: /opt/kubelini/ca
+    creates: ca.pem
+
+- name: template admin csr config
+  template:
+    src: admin-csr.json.j2
+    dest: /opt/kubelini/ca/admin-csr.json
+
+- name: Generate admin cert
+  shell: >
+    cfssl gencert
+    -ca=ca.pem
+    -ca-key=ca-key.pem
+    -config=ca-config.json
+    -profile=kubernetes
+    admin-csr.json | cfssljson -bare admin
+  args:
+    chdir: /opt/kubelini/ca
+    creates: admin.pem
+
+- name: template kube-proxy csr config
+  template:
+    src: kube-proxy-csr.json.j2
+    dest: /opt/kubelini/ca/kube-proxy-csr.json
+
+- name: Generate kube-proxy cert
+  shell: >
+    cfssl gencert
+    -ca=ca.pem
+    -ca-key=ca-key.pem
+    -config=ca-config.json
+    -profile=kubernetes
+    kube-proxy-csr.json | cfssljson -bare kube-proxy
+  args:
+    chdir: /opt/kubelini/ca
+    creates: kube-proxy.pem
+
+- name: Generate node cert
+  shell: >
+    sudo cfssl gencert
+    -ca=/opt/kubelini/ca/ca.pem
+    -ca-key=/opt/kubelini/ca/ca-key.pem
+    -config=/opt/kubelini/ca/ca-config.json
+    -profile=kubernetes
+    {{ item }}-csr.json | sudo cfssljson -bare {{ item }}
+  args:
+    chdir: /opt/kubelini/pki
+    creates: "{{ item }}.pem"
+  with_items: "{{ groups.kubernetes_master + groups.kubernetes_worker }}"
+
+- name: Set cluster infor to the internal ip of the first controller (this node) if not specified
+  set_fact:
+    kubernetes_cluster_address: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+  when: not kubernetes_cluster_address is defined
+
+- name: create kubectl bootstrap
+  script: generate_kubeconfig.sh "{{ kubernetes_cluster_address }}"
+  args:
+    creates: /opt/kubelini/bootstrap_token/bootstrap.kubeconfig
+  failed_when: False
+
+- name: create kube-proxy bootstrap
+  script: generate_kubeproxy_config.sh "{{ kubernetes_cluster_address }}"
+  args:
+    creates: /opt/kubelini/bootstrap_token/kube-proxy.kubeconfig
+  failed_when: False
+
+- name: sync generated certs to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/pki
+    key_prefix: pki
+    file_change_strategy: force
+    include: "*"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+
+- name: Upload ca cert to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/ca
+    key_prefix: ca
+    file_change_strategy: force
+    include: "ca*.pem"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+
+- name: Upload bootstrap token to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/bootstrap_token
+    key_prefix: bootstrap
+    file_change_strategy: force
+    include: "*.csv"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+
+- name: Upload bootstrap token to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/bootstrap_token
+    key_prefix: bootstrap
+    file_change_strategy: force
+    include: "*.kubeconfig"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+
+- name: Upload admin certs to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/ca
+    key_prefix: admin
+    file_change_strategy: force
+    include: "*admin*.*"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"

@@ -1,0 +1,65 @@
+- name: create etcd folder
+  file:
+    dest: /etc/etcd
+    state: directory
+
+- name: create etcd temp folder
+  file:
+    dest: /opt/kubelini/etcd
+    state: directory
+
+- name: create etcd data folder
+  file:
+    dest: /var/lib/etcd
+    state: directory
+
+- name: Copy cert files to etcd folder
+  copy:
+    src: "/opt/kubelini/pki_downloads/{{ item }}"
+    dest: "/etc/etcd/{{ item }}"
+    remote_src: yes
+  with_items:
+  - "{{ inventory_hostname }}-key.pem"
+  - "{{ inventory_hostname }}.csr"
+  - "{{ inventory_hostname }}.pem"
+  - ca.pem
+
+- name: Download etcd
+  get_url:
+    url: https://github.com/coreos/etcd/releases/download/v3.1.4/etcd-v3.1.4-linux-amd64.tar.gz
+    dest: /opt/kubelini/etcd.tar.gz
+
+- name: unpack etcd
+  unarchive:
+    src: /opt/kubelini/etcd.tar.gz
+    dest: /opt/kubelini/etcd
+    remote_src: True
+
+- name: Copy etcd to bin
+  copy:
+    src: "/opt/kubelini/etcd/etcd-v3.1.4-linux-amd64/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    remote_src: yes
+    mode: a+x
+  with_items:
+  - etcd
+  - etcdctl
+
+- name: get group ip addresses
+  set_fact:
+    etc_cluster_controller_str: "{% for h in groups['kubernetes_master'] %}{{ hostvars[h]['inventory_hostname'] }}=https://{{ hostvars[h]['ansible_default_ipv4']['address'] }}:2380{% if not loop.last %},{% endif %}{% endfor %}"
+
+- name: template etcd service definition
+  template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+  register: etcd_service_changed
+
+- name: start etcd
+  shell: "sudo systemctl enable etcd && sudo systemctl start etcd"
+  when: etcd_service_changed.changed
+
+- name: start etcd
+  service:
+    name: etcd
+    state: started

@@ -1,0 +1,26 @@
+- name: create ca folder
+  file:
+    dest: /opt/kubelini/pki
+    state: directory
+- name: get all ips
+  set_fact:
+    all_master_ips: "{% for h in groups['kubernetes_master'] %}\"{{ hostvars[h]['ansible_default_ipv4']['address'] }}\"{% if not loop.last %},{% endif %}{% endfor %}"
+    all_worker_ips: "{% for h in groups['kubernetes_worker'] %}\"{{ hostvars[h]['ansible_default_ipv4']['address'] }}\"{% if not loop.last %},{% endif %}{% endfor %}"
+
+- name: template node csr
+  template:
+    src: node-csr.json.j2
+    dest: /opt/kubelini/pki/{{ inventory_hostname }}-csr.json
+  delegate_to: "{{ groups.kubernetes_master[0] }}"
+
+#- name: read csr contents
+#  slurp:
+#    src: /opt/kubelini/pki/node-csr.json
+#  register: node_csr
+#
+#- name: write csr contents to ca
+#  copy:
+#    content: "{{ node_csr['content'] }}"
+#    dest: "/opt/kubelini/pki/{{ inventory_hostname }}-csr.json"
+#  delegate_to: "{{ groups.kubernetes_master[0] }}"
+
