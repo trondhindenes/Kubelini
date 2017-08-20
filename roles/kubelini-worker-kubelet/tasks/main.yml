@@ -116,13 +116,28 @@
   set_fact:
     api_servers_list: "{% for h in groups['kubernetes_master'] %}https://{{ hostvars[h]['ansible_default_ipv4']['address'] }}:6443{% if not loop.last %},{% endif %}{% endfor %}"
 
-- name: template kubelet service config (registration)
-  template:
-    src: kubelet.service-reg.j2
-    dest: /etc/systemd/system/kubelet.service
-  register: kubeletchanged
-  notify: 
-  - reload kubelet service
+- name: check if kubelet registration has already been done
+  stat:
+    path: /var/lib/kubelet/node_registration_checkfile
+  register: kubelet_node_registration
+
+- block:
+  - name: template kubelet service config (registration)
+    template:
+      src: kubelet.service-reg.j2
+      dest: /etc/systemd/system/kubelet.service
+    register: kubelet_reg_changed
+    notify: 
+    - reload kubelet service
+  - name: create kubelet check file
+    file:
+      path: /var/lib/kubelet/node_registration_checkfile
+      state: touch
+- name: start kubelet service
+  service:
+    name: kubelet
+    state: started
+  when: not kubelet_node_registration.stat.exists
 
 - name: template kube-proxy service config
   template:
@@ -144,23 +159,19 @@
     name: kube-proxy
     state: started
 
-- name: start kubelet service
-  service:
-    name: kubelet
-    state: started
-
-# A helpful reminder of what to look out for post-update.
 - pause:
     prompt: "Approve CSRs before continuing"
-  when: kubeletchanged.changed
+  when: (kubelet_reg_changed is defined) and (kubelet_reg_changed.changed)
 
 - name: template reconfigured kubelet service config to use builtin certificates
   template:
     src: kubelet.service-run.j2
     dest: /etc/systemd/system/kubelet.service
-  register: kubeletchanged
   notify: 
   - reload kubelet service
+
+- name: trigger handlers
+  meta: flush_handlers
 
 - name: start kubelet service
   service:

@@ -18,12 +18,12 @@ Kubelini does not match "Kubernetes the hard way" 100%, there are slight differe
 ### Differences from "Kubernetes the hard way"
 1. Certificates: Both Kubernetes and etcd relies on PKI, so there's a lot of certs flying aronud. In "Kubernetes the hard way", a single certificate containing all cluster node ip addresses is used with Kubernetes. Kubelini on the other hand, generates a uniqe cert per node. This allows for scaling out the cluster later, without having to re-issue certificates for every node.
 2. Self-signed kubelet certs: "Kubernetes the hard way" uses a new feature in kubelets where a kubelet can auto-generate its own certificate. These auto-generated certificates have some naming issues, so Kubelini uses the per-node certificates described above. This is implemented by first starting the kubelet in "registration mode", and then replacing the certs before restarting. I haven't been able to find a combination of kubelet params that allow this done in any other way (but I'm not giving up on it just yet).
-3. Networking: "Kubernetes the hard way" uses kubenet, while Kubelini uses weavenet. Implementing other cni-based plugins instead shouldn't be too hard.
-4. Ip-based communication between apiserver and kubelets: Kubelini explicitly sets the `--kubelet-preferred-address` flag to InternalIP, making sure that apiserver doesn't try and resolve the hostname of nodes when communicating with them.
+3. Networking: "Kubernetes the hard way" uses kubenet, while Kubelini uses weavenet. The primary reason for this is that by using an overlay we don't have to configure routes on each host or in the network's router. Weavenet takes care of all that. Implementing other cni-based plugins instead shouldn't be too hard.
+4. Ip-based communication between apiserver and kubelets: Kubelini explicitly sets the `--kubelet-preferred-address` flag to InternalIP, making sure that apiserver doesn't try and resolve the hostname of nodes when communicating with them. This should increase the robustness of commands like `kubectl log` and `kubectl exec`.
 5. Doesn't assume GCE. You can run Kubelini anywhere. The only opinionated piece is the s3 bucket used for exchanging files.
 
 ### Ansible implementation
-Kubelini attempts to not use anything "special" in terms of Ansible functionality. The roles included should be very easy to integrate into an existing Ansible setup, and there's no special "bootstrap script". Simply run "ansible-playbook site.yml" as you're used to. The `ansible.cfg` file just points to the local role dir and is really not needed if you don't want it. Same goes for the inventory file (`hosts`).
+Kubelini attempts to not use anything "special" in terms of Ansible functionality. The roles included should be very easy to integrate into an existing Ansible setup, and there's no special "bootstrap script". Simply run "ansible-playbook site.yml" as you're used to. The `ansible.cfg` file just points to the local role dir and is really not needed if you don't want it - just make sure your global ansible config somehow is able to "resolve" the roles in this repo. Same goes for the inventory file (`hosts`).
 
 It's worth noting that the inventory group names _are_ referenced a few places inside roles (to figure out the first cluster node ip, etc). If you want to use other group names, then you should do a search+replace in all roles.
 
@@ -34,3 +34,4 @@ All variables can be controlled using group_vars/all.yml. Also, be sure to creat
 ### TODO
 - Implement better change tracking: Some of the tasks performed (such as kubelet registration) are not properly idempodent, and will currently execute everytime the playbook is run. 
 - Smoother kubernetes api interaction: For now we just fire stuff at kubernetes using kubectl. A "native" Kubernetes module for Ansible is being developed, so watch this space!
+- Test scale out: Scaling either the worker group or master group should work, but hasn't been tested - yet.

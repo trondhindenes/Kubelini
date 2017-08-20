@@ -2,8 +2,7 @@
   "CN": "kubernetes",
   "hosts": [
     "{{ inventory_hostname }}",
-    {{ all_master_ips }},
-    {{ all_worker_ips }},
+    "{{ ansible_default_ipv4['address'] }}",
     "{{ cluster_ip_range_first_ip }}",
     "127.0.0.1",
     "localhost",
