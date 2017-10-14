@@ -121,6 +121,7 @@
     path: /var/lib/kubelet/node_registration_checkfile
   register: kubelet_node_registration
 
+  #start block
 - block:
   - name: template kubelet service config (registration)
     template:
@@ -133,11 +134,12 @@
     file:
       path: /var/lib/kubelet/node_registration_checkfile
       state: touch
-- name: start kubelet service
-  service:
-    name: kubelet
-    state: started
+  - name: start kubelet service
+    service:
+      name: kubelet
+      state: started
   when: not kubelet_node_registration.stat.exists
+  #end block
 
 - name: template kube-proxy service config
   template:
