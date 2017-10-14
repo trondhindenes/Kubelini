@@ -35,9 +35,9 @@ kubectl -n kube-system get pods
 kubectl apply -f dns-deployment.yml
 ```
 
-At this point you should have a fully functioning Kubernetes cluster. You can test stuff for example by running (on the same master node as above):
-`kubectl run netutils --image=trondhindenes/netutils -t -i`
-And test that you're able to resolve addresses on the internet by using
+At this point you should have a fully functioning Kubernetes cluster. You can test stuff for example by running (on the same master node as above):   
+`kubectl run netutils --image=trondhindenes/netutils -t -i`   
+And test that you're able to resolve addresses on the internet by using   
 `dig www.google.com`
 
 
