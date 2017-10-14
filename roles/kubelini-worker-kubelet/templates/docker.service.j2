@@ -3,7 +3,7 @@ Description=Docker Application Container Engine
 Documentation=http://docs.docker.com
 
 [Service]
-ExecStart=/usr/bin/docker daemon \
+ExecStart=/usr/bin/dockerd \
   --iptables=false \
   --ip-masq=false \
   --host=unix:///var/run/docker.sock \

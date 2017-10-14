@@ -21,6 +21,16 @@
   delegate_to: "{{ groups.kubernetes_master[0] }}"
   run_once: true
 
+- name: Set cluster infor to the internal ip of the first controller if not specified
+  set_fact:
+    kubernetes_cluster_address: "{{ hostvars[groups['kubernetes_master'][0]]['ansible_eth0']['ipv4']['address'] }}"
+  when: not kubernetes_cluster_address is defined
+
+- name: Generate local kubeconfig
+  script: generate_node_kubeconfig.sh "{{ kubernetes_cluster_address }}"
+  args:
+    creates: "/opt/kubelini/{{ inventory_hostname }}.kubeconfig"
+
 - name: create kubelet folders
   file:
     dest: "{{ item }}"
@@ -30,6 +40,12 @@
   - /var/lib/kube-proxy
   - /var/lib/kubernetes
   - /var/run/kubernetes
+
+- name: Copy the kubelet kubeconfig file
+  copy:
+    src: "/opt/kubelini/{{ inventory_hostname }}.kubeconfig"
+    dest: "/var/lib/kubelet/{{ inventory_hostname }}.kubeconfig"
+    remote_src: yes
 
 - name: copy kube-proxy bootstrap file
   copy:
@@ -54,20 +70,30 @@
   - "/opt/kubelini/pki_downloads/{{ inventory_hostname }}-key.pem"
 
 
-- name: create cni folder
+- name: create cni dirs
   file:
-    dest: /opt/cni
+    dest: "{{ item }}"
     state: directory
+  with_items:
+    - /opt/cni
+    - /opt/cni/bin
+    - /etc/cni
+    - /etc/cni/net.d
+
+- name: template weavenet plugin
+  template:
+    src: 10-weave.conf.j2
+    dest: /etc/cni/net.d/10-weave.conf
 
 - name: download cni plugin
   get_url:
     url: "{{ cni_download_url }}"
-    dest: /opt/kubelini/cni.tar.gz
+    dest: /opt/kubelini/downloads/cni-plugins-amd64-v0.6.0.tgz
 
 - name: unpack cni plugin
   unarchive:
-    src: /opt/kubelini/cni.tar.gz
-    dest: /opt/cni
+    src: /opt/kubelini/downloads/cni-plugins-amd64-v0.6.0.tgz
+    dest: /opt/cni/bin/
     remote_src: yes
 
 - name: download docker
@@ -88,8 +114,8 @@
 
 - name: get docker bin files to copy
   find:
-    paths: "/opt/kubelini/docker/"
-    recurse: yes
+    paths: "/opt/kubelini/docker/docker"
+    #recurse: yes
   register: docker_bin_files
 
 - name: copy files to bin
@@ -122,47 +148,52 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['kubernetes_master'] }}"
 
-- name: configure api servers list
-  set_fact:
-    api_servers_list: "{% for h in groups['kubernetes_master'] %}https://{{ hostvars[h]['ansible_default_ipv4']['address'] }}:6443{% if not loop.last %},{% endif %}{% endfor %}"
+#- name: configure api servers list
+#  set_fact:
+#    api_servers_list: "{% for h in groups['kubernetes_master'] %}https://{{ hostvars[h]['ansible_default_ipv4']['address'] }}:6443{% if not loop.last %},{% endif %}{% endfor %}"
 
 - name: check if kubelet registration has already been done
   stat:
     path: /var/lib/kubelet/node_registration_checkfile
   register: kubelet_node_registration
 
-  #start block
-- block:
-  - name: template kubelet service config (registration)
-    template:
-      src: kubelet.service-reg.j2
-      dest: /etc/systemd/system/kubelet.service
-    register: kubelet_reg_changed
-    notify:
-    - reload kubelet service
-
-  - name: create kubelet check file
-    file:
-      path: /var/lib/kubelet/node_registration_checkfile
-      state: touch
-
-  - name: start kubelet service
-    systemd:
-      enabled: yes
-      state: started
-      daemon_reload: yes
-      name: kubelet
-
-  - name: pause while waiting for kubelet to request certificates
-    pause:
-      seconds: 20
-
-  - name: approve csr
-    script: approve_csr.py
-    delegate_to: "{{ groups.kubernetes_master[0] }}"
-    when: auto_node_approval
-  when: not kubelet_node_registration.stat.exists
-  #end block
+#  #start block
+#- block:
+#  - name: template kubelet service config (registration)
+#    template:
+#      src: kubelet.service-reg.j2
+#      dest: /etc/systemd/system/kubelet.service
+#    register: kubelet_reg_changed
+#    notify:
+#    - reload kubelet service
+#
+#  - name: create kubelet check file
+#    file:
+#      path: /var/lib/kubelet/node_registration_checkfile
+#      state: touch
+#
+#  - name: start kubelet service
+#    systemd:
+#      enabled: yes
+#      state: started
+#      daemon_reload: yes
+#      name: kubelet
+#
+#  - name: pause while waiting for kubelet to request certificates
+#    pause:
+#      seconds: 20
+#    when: auto_node_approval | bool
+#
+#  - name: pause while waiting kubelet
+#    pause:
+#    when: not (auto_node_approval | bool)
+#
+#  - name: approve csr
+#    script: approve_csr.py
+#    delegate_to: "{{ groups.kubernetes_master[0] }}"
+#    when: auto_node_approval | bool
+#  when: not kubelet_node_registration.stat.exists
+#  #end block
 
 - name: template kube-proxy service config
   template:
@@ -184,9 +215,9 @@
     name: kube-proxy
     state: started
 
-- name: template reconfigured kubelet service config to use builtin certificates
+- name: template kubelet service config
   template:
-    src: kubelet.service-run.j2
+    src: kubelet.service.j2
     dest: /etc/systemd/system/kubelet.service
   notify:
   - reload kubelet service

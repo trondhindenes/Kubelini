@@ -31,3 +31,4 @@ rm /usr/bin/kube-scheduler || true
 rm /usr/bin/kubelet || true
 rm /usr/bin/kube-proxy || true
 rm /usr/bin/docker* || true
+rm $HOME/.kube -rf || true

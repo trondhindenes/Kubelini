@@ -38,6 +38,11 @@
   set_fact:
     local_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
     etcd_ips: "{% for h in groups['kubernetes_master'] %}https://{{ hostvars[h]['ansible_default_ipv4']['address'] }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
+
+- name: Get the number of apiserver nodes
+  set_fact:
+    api_servers_count: "{{ groups['kubernetes_master'] | length }}"
+
 - name: template apiserver config
   template:
     src: kube-apiserver.service.j2

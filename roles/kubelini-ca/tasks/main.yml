@@ -87,6 +87,7 @@
   args:
     creates: /opt/kubelini/bootstrap_token/kube-proxy.kubeconfig
   failed_when: False
+  
 
 - name: Add users to static csv
   lineinfile:
