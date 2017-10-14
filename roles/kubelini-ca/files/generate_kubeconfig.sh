@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
 BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
 cat > /opt/kubelini/bootstrap_token/token.csv <<EOF
 ${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"

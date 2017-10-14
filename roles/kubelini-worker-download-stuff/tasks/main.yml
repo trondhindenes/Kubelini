@@ -16,6 +16,7 @@
     object: "/pki/{{ item }}"
     dest: /opt/kubelini/pki_downloads/{{ item }}
     mode: get
+    overwrite: different
   with_items:
   - "{{ inventory_hostname }}-key.pem"
   - "{{ inventory_hostname }}.csr"
@@ -29,6 +30,7 @@
     object: "/ca/ca.pem"
     dest: /opt/kubelini/pki_downloads/ca.pem
     mode: get
+    overwrite: different
 
 - name: Get the ca key file
   s3:
@@ -38,6 +40,7 @@
     object: "/ca/ca-key.pem"
     dest: /opt/kubelini/pki_downloads/ca-key.pem
     mode: get
+    overwrite: different
 
 - name: Get the kubeconfig files
   s3:
@@ -47,6 +50,7 @@
     object: "/bootstrap/{{ item }}"
     dest: "/opt/kubelini/downloads/{{ item }}"
     mode: get
+    overwrite: different
   with_items:
   - "bootstrap.kubeconfig"
   - "kube-proxy.kubeconfig"

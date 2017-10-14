@@ -22,6 +22,7 @@
     poll: 0
     ignore_errors: true
     become: yes
+    when: "{{ allow_reboot | default('False') }}"
 
   - name: wait for server to come back
     local_action: wait_for
@@ -30,7 +31,7 @@
       host: "{{ ansible_host }}"
       port: 22
       state: started
-      delay: 30
+      delay: 10
       timeout: 300
   when: reboot_required.stat.exists or changed_hostname.changed
 
@@ -50,12 +51,13 @@
   - awscli
   - boto3
   - boto
+  - requests
 
 - name: configure work folder
   file:
     path: /opt/kubelini
     state: directory
-  
+
 - name: Download cfssl tools
   get_url:
     url: https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
@@ -83,10 +85,24 @@
     url: "{{ item }}"
     dest: /opt/kubelini
   with_items:
-    - "{{ k8s_url_root }}/kube-apiserver"
-    - "{{ k8s_url_root }}/kube-controller-manager"
-    - "{{ k8s_url_root }}/kube-scheduler"
-    - "{{ k8s_url_root }}/kubectl"
-    - "{{ k8s_url_root }}/kubelet"
-    - "{{ k8s_url_root }}/kube-proxy"
+  - "{{ k8s_url_root }}/kube-apiserver"
+  - "{{ k8s_url_root }}/kube-controller-manager"
+  - "{{ k8s_url_root }}/kube-scheduler"
+  - "{{ k8s_url_root }}/kubectl"
+  - "{{ k8s_url_root }}/kubelet"
+  - "{{ k8s_url_root }}/kube-proxy"
+
+- name: copy files to bin
+  copy:
+    src: "{{ item }}"
+    dest: /usr/bin/
+    remote_src: yes
+    mode: a+x
+  with_items:
+  - "/opt/kubelini/kube-apiserver"
+  - "/opt/kubelini/kube-controller-manager"
+  - "/opt/kubelini/kube-scheduler"
+  - "/opt/kubelini/kubectl"
+  - "/opt/kubelini/kubelet"
+  - "/opt/kubelini/kube-proxy"
 

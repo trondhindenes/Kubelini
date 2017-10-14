@@ -11,3 +11,14 @@ cluster_domain: cluster.local
 #kubernetes_cluster_address: 10.245.22.137
 
 weavenet_allocation_cidr: 10.200.0.0/16
+
+#if you set this var, fill it with users that will be added to "static" users:
+additional_kubernetes_static_users:
+  - user: deploy
+    password: whatUp
+    uid: '180'
+    group: 'system:masters'
+  - user: admin
+    password: DoIt
+    uid: '173'
+    group: 'system:masters'

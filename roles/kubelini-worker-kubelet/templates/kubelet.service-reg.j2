@@ -6,7 +6,6 @@ Requires=docker.service
 
 [Service]
 ExecStart=/usr/bin/kubelet \
-  --api-servers={{ api_servers_list}} \
   --allow-privileged=true \
   --cluster-dns={{ cluster_dns_address }} \
   --cluster-domain={{ cluster_domain }} \

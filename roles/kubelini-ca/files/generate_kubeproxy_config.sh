@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
 KUBERNETES_PUBLIC_ADDRESS=$1
 kubectl config set-cluster kubernetes-the-hard-way \
   --certificate-authority=/opt/kubelini/ca/ca.pem \

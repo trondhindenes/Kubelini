@@ -1,0 +1,38 @@
+---
+- hosts:
+  - kubernetes_master
+  - kubernetes_worker
+  become: yes
+  tasks:
+
+  - name: debug this
+    debug:
+      msg: "{{ ansible_default_ipv4['address'] }}"
+
+  - name: increase mmap counts
+    lineinfile:
+      path: /etc/sysctl.conf
+      regexp: '^vm.max_map_count='
+      line: 'vm.max_map_count=262144'
+
+  - name: increase ulimit counts
+    lineinfile:
+      path: /etc/security/limits.conf
+      line: "{{ item }}"
+    with_items:
+    - "user soft     nofile         65536"
+    - "root soft     nofile         65536"
+    - "user hard     nofile         65536"
+    - "root hard     nofile         65536"
+    - "* soft     nofile         65536"
+    - "* hard     nofile         65536"
+
+  - name: increase ulimit counts
+    lineinfile:
+      path: /etc/pam.d/common-session
+      line: "session required pam_limits.so"
+
+  - name: increase ulimit counts
+    lineinfile:
+      path: /etc/pam.d/common-session-noninteractive
+      line: "session required pam_limits.so"

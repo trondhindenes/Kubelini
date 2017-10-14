@@ -61,7 +61,7 @@
 
 - name: download cni plugin
   get_url:
-    url: https://storage.googleapis.com/kubernetes-release/network-plugins/cni-amd64-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz
+    url: "{{ cni_download_url }}"
     dest: /opt/kubelini/cni.tar.gz
 
 - name: unpack cni plugin
@@ -72,7 +72,7 @@
 
 - name: download docker
   get_url:
-    url: https://get.docker.com/builds/Linux/x86_64/docker-1.12.6.tgz
+    url: "https://get.docker.com/builds/Linux/x86_64/docker-{{ docker_version }}.tgz"
     dest: /opt/kubelini/docker.tgz
 
 - name: create docker temp folder
@@ -100,11 +100,21 @@
     mode: a+x
   with_items: "{{ docker_bin_files['files'] }}"
 
+- name: Make sure /etc/docker exists
+  file:
+    dest: /etc/docker
+    state: directory
+
+- name: template docker daemon.json
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+
 - name: template docker service config
   template:
     src: docker.service.j2
     dest: /etc/systemd/system/docker.service
-  notify: 
+  notify:
   - reload docker service
 
 - name: make sure we have masters in inventory
@@ -128,16 +138,29 @@
       src: kubelet.service-reg.j2
       dest: /etc/systemd/system/kubelet.service
     register: kubelet_reg_changed
-    notify: 
+    notify:
     - reload kubelet service
+
   - name: create kubelet check file
     file:
       path: /var/lib/kubelet/node_registration_checkfile
       state: touch
+
   - name: start kubelet service
-    service:
-      name: kubelet
+    systemd:
+      enabled: yes
       state: started
+      daemon_reload: yes
+      name: kubelet
+
+  - name: pause while waiting for kubelet to request certificates
+    pause:
+      seconds: 20
+
+  - name: approve csr
+    script: approve_csr.py
+    delegate_to: "{{ groups.kubernetes_master[0] }}"
+    when: auto_node_approval
   when: not kubelet_node_registration.stat.exists
   #end block
 
@@ -145,7 +168,7 @@
   template:
     src: kube-proxy.service.j2
     dest: /etc/systemd/system/kube-proxy.service
-  notify: 
+  notify:
   - reload kube-proxy service
 
 - name: trigger handlers
@@ -161,15 +184,11 @@
     name: kube-proxy
     state: started
 
-- pause:
-    prompt: "Approve CSRs before continuing"
-  when: (kubelet_reg_changed is defined) and (kubelet_reg_changed.changed)
-
 - name: template reconfigured kubelet service config to use builtin certificates
   template:
     src: kubelet.service-run.j2
     dest: /etc/systemd/system/kubelet.service
-  notify: 
+  notify:
   - reload kubelet service
 
 - name: trigger handlers

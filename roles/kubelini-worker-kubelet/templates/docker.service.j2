@@ -7,8 +7,7 @@ ExecStart=/usr/bin/docker daemon \
   --iptables=false \
   --ip-masq=false \
   --host=unix:///var/run/docker.sock \
-  --log-level=error \
-  --storage-driver=overlay
+  --log-level=error
 Restart=on-failure
 RestartSec=5
 

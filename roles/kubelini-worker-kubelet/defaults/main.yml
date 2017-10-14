@@ -1,0 +1,12 @@
+#docker options
+docker_version: 1.13.1
+docker_storage_driver: overlay2
+
+#kubelet options:
+image_gc_high_threshold: 85
+maximum_dead_containers_per_container: 3
+
+#Auto-approve new node registrations
+auto_node_approval: yes
+
+cni_download_url: https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz

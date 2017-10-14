@@ -88,12 +88,21 @@
     creates: /opt/kubelini/bootstrap_token/kube-proxy.kubeconfig
   failed_when: False
 
+- name: Add users to static csv
+  lineinfile:
+    dest: /opt/kubelini/bootstrap_token/token.csv
+    regexp: "^{{ item['user'] }}"
+    line: "{{ item['password'] }},{{ item['user'] }},{{ item['uid'] }},\"{{ item['group'] }}\""
+  with_items: "{{ additional_kubernetes_static_users }}"
+  when: additional_kubernetes_static_users is defined
+  no_log: True
+
 - name: sync generated certs to s3
   s3_sync:
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/pki
     key_prefix: pki
-    file_change_strategy: force
+    file_change_strategy: checksum
     include: "*"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
@@ -103,7 +112,7 @@
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/ca
     key_prefix: ca
-    file_change_strategy: force
+    file_change_strategy: checksum
     include: "ca*.pem"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
@@ -113,7 +122,7 @@
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/bootstrap_token
     key_prefix: bootstrap
-    file_change_strategy: force
+    file_change_strategy: checksum
     include: "*.csv"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
@@ -123,7 +132,7 @@
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/bootstrap_token
     key_prefix: bootstrap
-    file_change_strategy: force
+    file_change_strategy: checksum
     include: "*.kubeconfig"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
@@ -133,7 +142,7 @@
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/ca
     key_prefix: admin
-    file_change_strategy: force
+    file_change_strategy: checksum
     include: "*admin*.*"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"

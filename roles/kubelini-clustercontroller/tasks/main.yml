@@ -32,6 +32,7 @@
     src: "/opt/kubelini/downloads/token.csv"
     dest: "/var/lib/kubernetes/token.csv"
     remote_src: yes
+  notify: reload kube-apiserver
 
 - name: get local ip address
   set_fact:
@@ -41,21 +42,21 @@
   template:
     src: kube-apiserver.service.j2
     dest: /etc/systemd/system/kube-apiserver.service
-  notify: 
+  notify:
   - reload kube-apiserver
 
 - name: template controller-manager config
   template:
     src: kube-controller-manager.service.j2
     dest: /etc/systemd/system/kube-controller-manager.service
-  notify: 
+  notify:
   - reload kube-controller-manager
 
 - name: template kube-scheduler config
   template:
     src: kube-scheduler.service.j2
     dest: /etc/systemd/system/kube-scheduler.service
-  notify: 
+  notify:
   - reload kube-scheduler
 
 - name: trigger handlers
