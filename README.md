@@ -14,6 +14,8 @@ Kubelini does not match "Kubernetes the hard way" 100%, there are slight differe
 - It is expected that networking is alredy configured: full access between the hosts in the cluster, and ssh access from the Ansible control node to all hosts. Kubelini does _not_ require setting up custom routes, as it uses an overlay network for pod communication.
 - You need Ansible. Kubelini was tested with Ansible 2.3.2, but any version above 2.1-ish should work.
 - Target nodes need to satisfy the standard Ansible prereqs - which is essentially python and ssh
+- You ned an inventory containing 1 or more nodes in a group called "kubernetes_master". These hosts will get etcd/apiserver and other "master" workloads installed.
+- You also need a host group called "kubernetes_worker", which should contain 1 or more hosts where actual pods will get scheduled.
 
 ### Differences from "Kubernetes the hard way"
 1. Certificates: Both Kubernetes and etcd relies on PKI, so there's a lot of certs flying aronud. In "Kubernetes the hard way", a single certificate containing all cluster node ip addresses is used with Kubernetes. Kubelini on the other hand, generates a uniqe cert per node. This allows for scaling out the cluster later, without having to re-issue certificates for every node.
@@ -21,6 +23,23 @@ Kubelini does not match "Kubernetes the hard way" 100%, there are slight differe
 3. Networking: "Kubernetes the hard way" uses kubenet, while Kubelini uses weavenet. The primary reason for this is that by using an overlay we don't have to configure routes on each host or in the network's router. Weavenet takes care of all that. Implementing other cni-based plugins instead shouldn't be too hard.
 4. Ip-based communication between apiserver and kubelets: Kubelini explicitly sets the `--kubelet-preferred-address` flag to InternalIP, making sure that apiserver doesn't try and resolve the hostname of nodes when communicating with them. This should increase the robustness of commands like `kubectl log` and `kubectl exec`.
 5. Doesn't assume GCE. You can run Kubelini anywhere. The only opinionated piece is the s3 bucket used for exchanging files.
+
+### Stuff you need to do after running site.yml
+For now, we don't automatically set up networking or DNS. That means that after the playbook has run for the first time, the following steps are required:
+Log into the first node in the "kubernetes_master" group and perform the following:
+```
+cd /opt/kubelini/deployments
+kubectl apply -f weavenet-config.yml
+(wait until the weavenet pods come online)
+kubectl -n kube-system get pods
+kubectl apply -f dns-deployment.yml
+```
+
+At this point you should have a fully functioning Kubernetes cluster. You can test stuff for example by running (on the same master node as above):
+`kubectl run netutils --image=trondhindenes/netutils -t -i`
+And test that you're able to resolve addresses on the internet by using
+`dig www.google.com`
+
 
 ### Ansible implementation
 Kubelini attempts to not use anything "special" in terms of Ansible functionality. The roles included should be very easy to integrate into an existing Ansible setup, and there's no special "bootstrap script". Simply run "ansible-playbook site.yml" as you're used to. The `ansible.cfg` file just points to the local role dir and is really not needed if you don't want it - just make sure your global ansible config somehow is able to "resolve" the roles in this repo. Same goes for the inventory file (`hosts`).
@@ -34,4 +53,4 @@ All variables can be controlled using group_vars/all.yml. Also, be sure to creat
 ### TODO
 - Implement better change tracking: Some of the tasks performed (such as kubelet registration) are not properly idempodent, and will currently execute everytime the playbook is run. 
 - Smoother kubernetes api interaction: For now we just fire stuff at kubernetes using kubectl. A "native" Kubernetes module for Ansible is being developed, so watch this space!
-- Test scale out: Scaling either the worker group or master group should work, but hasn't been tested - yet.
+- Implement encryption of secrets
