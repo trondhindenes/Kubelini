@@ -8,6 +8,8 @@ As an excerise for learning the ins and outs of Kubernetes, I decided to create 
 
 Kubelini does not match "Kubernetes the hard way" 100%, there are slight differences in networking and some of the PKI stuff (see below). However, most of the components are configured as identical as possible to the original.
 
+### What gets deployed
+Kubelini deploys Kubernetes 1.8 with Docker 1.13 and Weavenet 2.0.5
 ### Prerequisites
 - Kubelini uses Amazon S3 to distribute certain files (certificates and dynamicly generated config files). Replacing the S3 part with cifs or a similar backend should be fairly easy if s3 is a big no-no for you.
 - Kubelini expects a set of already running nodes, and has only been tested with Ubuntu 16.04.
@@ -24,7 +26,7 @@ Kubelini does not match "Kubernetes the hard way" 100%, there are slight differe
 4. Ip-based communication between apiserver and kubelets: Kubelini explicitly sets the `--kubelet-preferred-address` flag to InternalIP, making sure that apiserver doesn't try and resolve the hostname of nodes when communicating with them. This should increase the robustness of commands like `kubectl log` and `kubectl exec`.
 5. Doesn't assume GCE. You can run Kubelini anywhere. The only opinionated piece is the s3 bucket used for exchanging files.
 
-### Stuff you need to do after running site.yml
+### Things you need to do after running site.yml
 For now, we don't automatically set up networking or DNS. That means that after the playbook has run for the first time, the following steps are required:
 Log into the first node in the "kubernetes_master" group and perform the following:
 ```
@@ -34,6 +36,8 @@ kubectl apply -f weavenet-config.yml
 kubectl -n kube-system get pods
 kubectl apply -f dns-deployment.yml
 ```
+
+Both of the above templates (weavenet and kube-dns) are templated by Ansible to fit the networking settings configured for several of the Kubernetes components. It is therefore important that you use these, and not the "default" vendor deployments for kube-dns and weavenet.
 
 At this point you should have a fully functioning Kubernetes cluster. You can test stuff for example by running (on the same master node as above):   
 `kubectl run netutils --image=trondhindenes/netutils -t -i`   
