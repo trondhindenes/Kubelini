@@ -28,3 +28,4 @@ You should now be able to log on to one of the master servers and issue `kubectl
 
 2. You can now run the `worker` playbook:   
 `ansible-playbook -i hosts site.yml`. This will configure kubernetes on your worker nodes. The worker nodes will each get a weave-net pod as they come online. After this step, you'll be able to list your nodes by typing `kubectl get nodes`. All your nodes should now show up as "ready".
+
