@@ -15,9 +15,9 @@ rm /etc/systemd/system/etcd.service || true
 rm /etc/systemd/system/kubelet.service || true
 rm /etc/systemd/system/kube-proxy.service || true
 rm /etc/systemd/system/docker.service || true
-systemctl daemon-reload
-rm /opt/kubelini -rf
-rm /etc/etcd -rf
+systemctl daemon-reload || true
+rm /opt/kubelini -rf || true
+rm /etc/etcd -rf || true
 rm /var/lib/kubernetes -rf || true
 rm /var/lib/etcd -rf || true
 rm /var/lib/kube-proxy -rf || true

@@ -15,13 +15,20 @@
 
 - name: Copy cert files to etcd folder
   copy:
-    src: "/opt/kubelini/pki_downloads/{{ item }}"
+    src: "/opt/kubelini/pki/{{ item }}"
     dest: "/etc/etcd/{{ item }}"
     remote_src: yes
   with_items:
   - "{{ inventory_hostname }}-key.pem"
   - "{{ inventory_hostname }}.csr"
   - "{{ inventory_hostname }}.pem"
+
+- name: Copy cert files to etcd folder
+  copy:
+    src: "/opt/kubelini/ca/{{ item }}"
+    dest: "/etc/etcd/{{ item }}"
+    remote_src: yes
+  with_items:
   - ca.pem
 
 - name: Download etcd

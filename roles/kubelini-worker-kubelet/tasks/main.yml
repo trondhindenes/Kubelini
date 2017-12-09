@@ -26,6 +26,7 @@
     kubernetes_cluster_address: "{{ hostvars[groups['kubernetes_master'][0]]['ansible_eth0']['ipv4']['address'] }}"
   when: not kubernetes_cluster_address is defined
 
+#TODO: Idempodency here. Generate to a temp dir, and then compare.
 - name: Generate local kubeconfig
   script: generate_node_kubeconfig.sh "{{ kubernetes_cluster_address }}"
   args:

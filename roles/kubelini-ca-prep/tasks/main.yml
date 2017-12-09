@@ -1,0 +1,105 @@
+- name: wipe ca directory if force_regenerate_ca_cert is set
+  file:
+    dest: /opt/kubelini/ca
+    state: absent
+  when: force_regenerate_ca_cert
+
+- name: create ca folder
+  file:
+    dest: /opt/kubelini/ca
+    state: directory
+
+- name: create bootstrap token folder
+  file:
+    dest: /opt/kubelini/bootstrap_token
+    state: directory
+
+- name: template ca config
+  template:
+    src: ca-config.json.j2
+    dest: /opt/kubelini/ca/ca-config.json
+
+- name: template ca config
+  template:
+    src: ca-csr.json.j2
+    dest: /opt/kubelini/ca/ca-csr.json
+
+- name: Generate ca cert
+  shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
+  args:
+    chdir: /opt/kubelini/ca
+    creates: ca.pem
+
+- name: template admin csr config
+  template:
+    src: admin-csr.json.j2
+    dest: /opt/kubelini/ca/admin-csr.json
+
+- name: Generate admin cert
+  shell: >
+    cfssl gencert
+    -ca=ca.pem
+    -ca-key=ca-key.pem
+    -config=ca-config.json
+    -profile=kubernetes
+    admin-csr.json | cfssljson -bare admin
+  args:
+    chdir: /opt/kubelini/ca
+    creates: admin.pem
+
+- name: template kube-proxy csr config
+  template:
+    src: kube-proxy-csr.json.j2
+    dest: /opt/kubelini/ca/kube-proxy-csr.json
+
+- name: Generate kube-proxy cert
+  shell: >
+    cfssl gencert
+    -ca=ca.pem
+    -ca-key=ca-key.pem
+    -config=ca-config.json
+    -profile=kubernetes
+    kube-proxy-csr.json | cfssljson -bare kube-proxy
+  args:
+    chdir: /opt/kubelini/ca
+    creates: kube-proxy.pem
+
+- name: Upload ca cert to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/ca
+    key_prefix: ca
+    file_change_strategy: checksum
+    include: "ca*.pem"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+
+- name: Upload bootstrap token to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/bootstrap_token
+    key_prefix: bootstrap
+    file_change_strategy: checksum
+    include: "*.csv"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+
+- name: Upload bootstrap token to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/bootstrap_token
+    key_prefix: bootstrap
+    file_change_strategy: checksum
+    include: "*.kubeconfig"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+
+- name: Upload admin certs to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/ca
+    key_prefix: admin
+    file_change_strategy: checksum
+    include: "*admin*.*"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"

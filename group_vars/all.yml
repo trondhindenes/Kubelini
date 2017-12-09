@@ -1,5 +1,5 @@
 ---
-s3_sync_bucket: kubelini
+s3_sync_bucket: kubelinidev
 cluster_ip_range: 10.32.0.0/16
 cluster_ip_range_first_ip: 10.32.0.1 #needed for certificate
 cluster_dns_address: 10.32.0.10
@@ -8,7 +8,8 @@ cluster_cidr: 10.200.0.0/16
 
 cluster_domain: cluster.local
 #Set this if you have a LB in front of your controllers!
-#kubernetes_cluster_address: 10.245.22.137
+#If not, use the first master node in your inventory
+kubernetes_cluster_address: 10.245.22.35
 
 weavenet_allocation_cidr: 10.200.0.0/16
 
