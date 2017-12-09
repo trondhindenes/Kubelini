@@ -1,5 +1,9 @@
 # Kubelini aka "Kubernetes the hard way the easy way"
 
+### TLDR
+If you want to just get going, head over to:
+[How to Run](../blob/master/HOWTO.md)
+
 ### Work in progress! 
 This repo is not finished in any way
 

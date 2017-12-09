@@ -17,19 +17,26 @@
 
 - name: Copy cert files to kubernetes folder
   copy:
-    src: "/opt/kubelini/pki_downloads/{{ item }}"
+    src: "/opt/kubelini/pki/{{ item }}"
     dest: "/var/lib/kubernetes/{{ item }}"
     remote_src: yes
   with_items:
   - "{{ inventory_hostname }}-key.pem"
   - "{{ inventory_hostname }}.csr"
   - "{{ inventory_hostname }}.pem"
+
+- name: Copy cert files to kubernetes folder
+  copy:
+    src: "/opt/kubelini/ca/{{ item }}"
+    dest: "/var/lib/kubernetes/{{ item }}"
+    remote_src: yes
+  with_items:
   - ca.pem
   - ca-key.pem
 
 - name: Copy token file to kubernetes folder
   copy:
-    src: "/opt/kubelini/downloads/token.csv"
+    src: "/opt/kubelini/bootstrap_token/token.csv"
     dest: "/var/lib/kubernetes/token.csv"
     remote_src: yes
   notify: reload kube-apiserver
@@ -81,3 +88,12 @@
   service:
     name: kube-scheduler
     state: started
+
+- name: template the bootstrap clusterrole
+  template:
+    src: bootstrap_clusterrole.yml.j2
+    dest: /opt/kubelini/bootstrap_clusterrole.yml
+
+- name: create the bootstrap clusterrole
+  shell: kubectl apply -f /opt/kubelini/bootstrap_clusterrole.yml
+  run_once: true

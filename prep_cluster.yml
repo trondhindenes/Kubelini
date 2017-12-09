@@ -1,0 +1,65 @@
+#This playbook preps the cluster components, and is only required to run once or when a "master" is added or removed.
+---
+#Download required binaries
+- hosts:
+  - kubernetes_master
+  become: yes
+  vars_files:
+    - secrets/secrets.yml
+  roles:
+  - kubelini-common
+
+# Prep the CA and upload to S3. This is a one-time operation, and does _not_ have to be performed on a kubernetes node.
+- hosts:
+  - kubernetes_master[0]
+  become: yes
+  vars_files:
+    - secrets/secrets.yml
+  roles:
+  - kubelini-ca-prep
+
+#Generate the node-specific certificate request
+- hosts:
+  - kubernetes_master
+  become: yes
+  vars_files:
+    - secrets/secrets.yml
+  roles: 
+  - kubelini-worker-pki
+
+#Download the CA file(s) from S3, and use it to request/generate required certificates
+- hosts:
+  - kubernetes_master
+  become: yes
+  vars_files:
+    - secrets/secrets.yml
+  roles: 
+  - kubelini-worker-download-stuff
+  - kubelini-ca
+
+#Configure etcd on master nodes
+- hosts:
+  - kubernetes_master
+  become: yes
+  vars_files:
+    - secrets/secrets.yml
+  roles: 
+  - kubelini-etcd
+
+#Conigure the Kubernetes cluster controller services on master nodes
+- hosts:
+  - kubernetes_master
+  become: yes
+  vars_files:
+    - secrets/secrets.yml
+  roles: 
+  - kubelini-clustercontroller
+
+#Configure weavenet and kubedns. This is a one-time thing.
+- hosts:
+  - kubernetes_master[0]
+  become: yes
+  vars_files:
+    - secrets/secrets.yml
+  roles:
+  - kubelini-addons

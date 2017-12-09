@@ -102,7 +102,7 @@
 - name: Add users to static csv
   lineinfile:
     dest: /opt/kubelini/bootstrap_token/token.csv
-    regexp: "^{{ item['user'] }}"
+    regexp: "^{{ item['password'] }}"
     line: "{{ item['password'] }},{{ item['user'] }},{{ item['uid'] }},\"{{ item['group'] }}\""
   with_items: "{{ additional_kubernetes_static_users }}"
   when: additional_kubernetes_static_users is defined

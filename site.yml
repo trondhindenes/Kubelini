@@ -1,7 +1,7 @@
+#This playbook configures a node. It's written to be independent so you can run it against a single node with the --limit parameter
 ---
 #Download required binaries
 - hosts:
-  - kubernetes_master
   - kubernetes_worker
   become: yes
   vars_files:
@@ -9,18 +9,8 @@
   roles:
   - kubelini-common
 
-# Prep the CA and upload to S3. This is a one-time operation, and does _not_ have to be performed on a kubernetes node.
-- hosts:
-  - kubernetes_master[0]
-  become: yes
-  vars_files:
-    - secrets/secrets.yml
-  roles:
-  - kubelini-ca-prep
-
 #Generate the node-specific certificate request
 - hosts:
-  - kubernetes_master
   - kubernetes_worker
   become: yes
   vars_files:
@@ -30,7 +20,6 @@
 
 #Download the CA file(s) from S3, and use it to request/generate required certificates
 - hosts:
-  - kubernetes_master
   - kubernetes_worker
   become: yes
   vars_files:
@@ -39,34 +28,12 @@
   - kubelini-worker-download-stuff
   - kubelini-ca
 
+#Configure kubelet, docker and related things
 - hosts:
-  - kubernetes_master
+  - kubernetes_worker
   become: yes
   vars_files:
     - secrets/secrets.yml
   roles: 
-  - kubelini-etcd
-#
-#- hosts:
-#  - kubernetes_master
-#  become: yes
-#  vars_files:
-#    - secrets/secrets.yml
-#  roles: 
-#  - kubelini-clustercontroller
-#
-#- hosts:
-#  - kubernetes_worker
-#  become: yes
-#  vars_files:
-#    - secrets/secrets.yml
-#  roles: 
-#  - kubelini-worker-kubelet
-#
-#- hosts:
-#  - kubernetes_master[0]
-#  become: yes
-#  vars_files:
-#    - secrets/secrets.yml
-#  roles:
-#  - kubelini-addons
+  - kubelini-worker-kubelet
+
