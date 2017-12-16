@@ -1,0 +1,9 @@
+---
+- name: prereq
+  hosts:
+  - kubernetes_master
+  - kubernetes_worker
+  gather_facts: no
+  become: yes
+  tasks:
+    - raw: /bin/bash -c "apt-get update && apt-get install -y python"
