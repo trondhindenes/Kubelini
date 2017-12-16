@@ -11,12 +11,12 @@ If you want to just get going, head over to:
 This repo is not finished in any way
 
 ### Background
-As an excerise for learning the ins and outs of Kubernetes, I decided to create an Ansible-based deployment of Kelsey Hightower's "Kubernetes the hard way" (https://github.com/kelseyhightower/kubernetes-the-hard-way).
+As an excerise for learning the ins and outs of Kubernetes, I decided to create an Ansible-based deployment of Kelsey Hightower's "Kubernetes the hard way" (https://github.com/kelseyhightower/kubelini).
 
 Kubelini does not match "Kubernetes the hard way" 100%, there are slight differences in networking and some of the PKI stuff (see below). However, most of the components are configured as identical as possible to the original.
 
 ### What gets deployed
-Kubelini deploys Kubernetes 1.8 with Docker 1.13 and Weavenet 2.0.5
+Kubelini deploys Kubernetes 1.9.0 with Docker 1.13 and Weavenet or Flannel
 ### Prerequisites
 - Kubelini uses Amazon S3 to distribute certain files (certificates and dynamicly generated config files). Replacing the S3 part with cifs or a similar backend should be fairly easy if s3 is a big no-no for you.
 - Kubelini expects a set of already running nodes, and has only been tested with Ubuntu 16.04.
@@ -34,26 +34,33 @@ Kubelini deploys Kubernetes 1.8 with Docker 1.13 and Weavenet 2.0.5
 5. Doesn't assume GCE. You can run Kubelini anywhere. The only opinionated piece is the s3 bucket used for exchanging files.
 
 ### Things you need to do after running site.yml
-For now, we don't automatically set up networking or DNS. That means that after the playbook has run for the first time, the following steps are required:
-Log into the first node in the "kubernetes_master" group and perform the following:
-```
-cd /opt/kubelini/deployments
-kubectl apply -f weavenet-config.yml
-(wait until the weavenet pods come online)
-kubectl -n kube-system get pods
-kubectl apply -f dns-deployment.yml
-```
-
-Both of the above templates (weavenet and kube-dns) are templated by Ansible to fit the networking settings configured for several of the Kubernetes components. It is therefore important that you use these, and not the "default" vendor deployments for kube-dns and weavenet.
-
-At this point you should have a fully functioning Kubernetes cluster. You can test stuff for example by running (on the same master node as above):   
+Nothing, you should end up with a fully functioning Kubernetes cluster. You can test stuff for example by running (on the same master node as above):   
 `kubectl run netutils --image=trondhindenes/netutils -t -i`   
 And test that you're able to resolve addresses on the internet by using   
 `dig www.google.com`
 
+### Using kubectl locally against your cluster
+After kubelini has been set up, grab the ca.pem cert and the admin.pem and admin-key.pem from the s3 bucket you've used.
+Also make sure you have kubectl locally in path. Then run (make sure to replace the `kubernetes_cluster_address` variable):
+
+```
+kubectl config set-cluster kubelini \
+  --certificate-authority=ca.pem \
+  --embed-certs=true \
+  --server=https://<kubernetes_cluster_address>:6443
+
+kubectl config set-credentials kubelini \
+  --client-certificate=admin.pem \
+  --client-key=admin-key.pem \
+  --embed-certs=true
+kubectl config set-context kubelini \
+  --cluster=kubelini \
+  --user=kubelini
+kubectl config use-context kubelini
+```
 
 ### Ansible implementation
-Kubelini attempts to not use anything "special" in terms of Ansible functionality. The roles included should be very easy to integrate into an existing Ansible setup, and there's no special "bootstrap script". Simply run "ansible-playbook site.yml" as you're used to. The `ansible.cfg` file just points to the local role dir and is really not needed if you don't want it - just make sure your global ansible config somehow is able to "resolve" the roles in this repo. Same goes for the inventory file (`hosts`).
+Kubelini attempts to not use anything "special" in terms of Ansible functionality. The roles included should be very easy to integrate into an existing Ansible setup, and there's no special "bootstrap script". Simply run `ansible-playbook prep_cluster.yml` for the cluster/master setup, and `ansible-playbook site.yml` to configure workers as you're used to. The `ansible.cfg` file just points to the local role dir and is really not needed if you don't want it - just make sure your global ansible config somehow is able to "resolve" the roles in this repo. Same goes for the inventory file (`hosts`).
 
 It's worth noting that the inventory group names _are_ referenced a few places inside roles (to figure out the first cluster node ip, etc). If you want to use other group names, then you should do a search+replace in all roles.
 
@@ -62,6 +69,6 @@ All variables can be controlled using group_vars/all.yml. Also, be sure to creat
 - `aws_secret_access_key`
 
 ### TODO
-- Implement better change tracking: Some of the tasks performed (such as kubelet registration) are not properly idempodent, and will currently execute everytime the playbook is run. 
+- Implement better change tracking. Many of the tasks currently rely on simple `if file exists` logic, and could be made more robust.
 - Smoother kubernetes api interaction: For now we just fire stuff at kubernetes using kubectl. A "native" Kubernetes module for Ansible is being developed, so watch this space!
 - Implement encryption of secrets
