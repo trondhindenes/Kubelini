@@ -7,6 +7,13 @@
   template:
     src: weavenet-config.yml.j2
     dest: /opt/kubelini/deployments/weavenet-config.yml
+  when: networking_stack == 'weavenet'
+
+- name: template flannel deployment
+  template:
+    src: flannel-config.yml.j2
+    dest: /opt/kubelini/deployments/flannel-config.yml
+  when: networking_stack == 'flannel'
 
 - name: template dns deployment
   template:
@@ -15,6 +22,11 @@
 
 - name: Apply weave deployment
   shell: kubectl apply -f /opt/kubelini/deployments/weavenet-config.yml
+  when: networking_stack == 'weavenet'
+
+- name: Apply flannel deployment
+  shell: kubectl apply -f /opt/kubelini/deployments/flannel-config.yml
+  when: networking_stack == 'flannel'
 
 - name: Apply kubedns deployment
   shell: kubectl apply -f /opt/kubelini/deployments/dns-deployment.yml

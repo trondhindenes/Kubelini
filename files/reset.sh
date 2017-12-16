@@ -1,4 +1,5 @@
 systemctl daemon-reload
+docker rm -f $(docker ps -q -a) || true
 service etcd stop || true
 service kube-apiserver stop || true
 service kube-controller-manager stop || true
