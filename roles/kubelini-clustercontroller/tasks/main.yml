@@ -96,4 +96,9 @@
 
 - name: create the bootstrap clusterrole
   shell: kubectl apply -f /opt/kubelini/bootstrap_clusterrole.yml
+  until: clusterrole_bootstrap_result.rc == 0
+  register: clusterrole_bootstrap_result
+  retries: 10
+  delay: 10
+  ignore_errors: yes
   run_once: true

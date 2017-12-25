@@ -2,7 +2,21 @@
   "CN": "system:node:{{ inventory_hostname }}",
   "hosts": [
     "{{ inventory_hostname }}",
-    "{{ ansible_default_ipv4['address'] }}",
+
+    {# Add all ip addresses for the host to the cert, in case of multi-homed hosts #}
+    {% for address in ansible_all_ipv4_addresses %}
+    "{{ address }}"
+      {% if not loop.last %}
+        ,
+      {% endif %}
+    {% endfor %}
+    ,
+
+    {# If host is a member of master, add the cluster_address to the cert aswell #}
+    {# the kubernetes_cluster_address address is the one used by clients #}
+    {% if 'kubernetes_master' in group_names %}
+    "{{ kubernetes_cluster_address }}",
+    {% endif %}
     "{{ cluster_ip_range_first_ip }}",
     "127.0.0.1",
     "localhost",

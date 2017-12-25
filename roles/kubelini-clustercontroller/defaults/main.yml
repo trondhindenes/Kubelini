@@ -1,1 +1,9 @@
 encrypt_secrets_at_rest: yes
+apiserver_oidc_enable: no
+
+#if apiserver_oidc_enable is true, set the following:
+apiserver_oidc_issuer_url:
+apiserver_oidc_username_claim:
+apiserver_oidc_client_id:
+apiserver_oidc_groups_claim:
+

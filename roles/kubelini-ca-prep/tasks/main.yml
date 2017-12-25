@@ -9,6 +9,11 @@
     dest: /opt/kubelini/ca
     state: directory
 
+- name: create admin admin_kubeconfig folder
+  file:
+    dest: /opt/kubelini/admin_kubeconfig
+    state: directory
+
 - name: create bootstrap token folder
   file:
     dest: /opt/kubelini/bootstrap_token
@@ -64,6 +69,11 @@
     chdir: /opt/kubelini/ca
     creates: kube-proxy.pem
 
+- name: Generate admin kubeconfig
+  script: generate_admin_kubeconfig.sh "{{ kubernetes_cluster_address }}"
+  args:
+    creates: /opt/kubelini/admin_kubeconfig/admin.kubeconfig
+
 - name: Upload ca cert to s3
   s3_sync:
     bucket: "{{ s3_sync_bucket }}"
@@ -101,5 +111,15 @@
     key_prefix: admin
     file_change_strategy: checksum
     include: "*admin*.*"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+
+- name: Upload admin kubeconfig to s3
+  s3_sync:
+    bucket: "{{ s3_sync_bucket }}"
+    file_root: /opt/kubelini/admin_kubeconfig
+    key_prefix: admin
+    file_change_strategy: checksum
+    include: "*.*"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"

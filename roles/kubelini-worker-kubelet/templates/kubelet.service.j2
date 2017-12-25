@@ -6,6 +6,9 @@ Requires=docker.service
 
 [Service]
 ExecStart=/usr/bin/kubelet \
+{% if allow_swap %}
+  --fail-swap-on=false \
+{% endif %}
   --allow-privileged=true \
   --anonymous-auth=false \
   --client-ca-file=/var/lib/kubernetes/ca.pem \
