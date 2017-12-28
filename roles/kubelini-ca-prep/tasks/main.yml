@@ -29,6 +29,20 @@
     src: ca-csr.json.j2
     dest: /opt/kubelini/ca/ca-csr.json
 
+- name: Download ca cert from s3 if it exists
+  aws_s3:
+    bucket: "{{ s3_sync_bucket }}"
+    object: "/ca/{{ item }}"
+    dest: "/opt/kubelini/ca/{{ item }}"
+    mode: get
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+  with_items:
+  - ca.pem
+  - ca-key.pem
+  ignore_errors: true
+  register: download_existing_ca_certs_result
+
 - name: Generate ca cert
   shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
   args:
