@@ -30,9 +30,9 @@
     dest: /opt/kubelini/ca/ca-csr.json
 
 - name: Download ca cert from s3 if it exists
-  aws_s3:
+  s3:
     bucket: "{{ s3_sync_bucket }}"
-    object: "/ca/{{ item }}"
+    object: "{{ cluster_id }}/ca/{{ item }}"
     dest: "/opt/kubelini/ca/{{ item }}"
     mode: get
     aws_access_key: "{{ aws_access_key_id }}"
@@ -92,7 +92,7 @@
   s3_sync:
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/ca
-    key_prefix: ca
+    key_prefix: "{{ cluster_id }}/ca"
     file_change_strategy: checksum
     include: "ca*.pem"
     aws_access_key: "{{ aws_access_key_id }}"
@@ -102,7 +102,7 @@
   s3_sync:
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/bootstrap_token
-    key_prefix: bootstrap
+    key_prefix: "{{ cluster_id }}/bootstrap"
     file_change_strategy: checksum
     include: "*.csv"
     aws_access_key: "{{ aws_access_key_id }}"
@@ -112,7 +112,7 @@
   s3_sync:
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/bootstrap_token
-    key_prefix: bootstrap
+    key_prefix: "{{ cluster_id }}/bootstrap"
     file_change_strategy: checksum
     include: "*.kubeconfig"
     aws_access_key: "{{ aws_access_key_id }}"
@@ -122,7 +122,7 @@
   s3_sync:
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/ca
-    key_prefix: admin
+    key_prefix: "{{ cluster_id }}/admin"
     file_change_strategy: checksum
     include: "*admin*.*"
     aws_access_key: "{{ aws_access_key_id }}"
@@ -132,7 +132,7 @@
   s3_sync:
     bucket: "{{ s3_sync_bucket }}"
     file_root: /opt/kubelini/admin_kubeconfig
-    key_prefix: admin
+    key_prefix: "{{ cluster_id }}/admin"
     file_change_strategy: checksum
     include: "*.*"
     aws_access_key: "{{ aws_access_key_id }}"

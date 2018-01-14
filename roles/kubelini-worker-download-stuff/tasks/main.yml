@@ -8,6 +8,11 @@
     dest: /opt/kubelini/downloads
     state: directory
 
+- name: create admin_token folder
+  file:
+    dest: /opt/kubelini/admin_kubeconfig
+    state: directory
+
 #- name: Get the node cert files
 #  s3:
 #    aws_access_key: "{{ aws_access_key_id }}"
@@ -27,7 +32,7 @@
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
     bucket: "{{ s3_sync_bucket }}"
-    object: "/ca/ca.pem"
+    object: "/{{ cluster_id }}/ca/ca.pem"
     dest: /opt/kubelini/pki_downloads/ca.pem
     mode: get
     overwrite: different
@@ -37,10 +42,22 @@
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
     bucket: "{{ s3_sync_bucket }}"
-    object: "/ca/ca-key.pem"
+    object: "/{{ cluster_id }}/ca/ca-key.pem"
     dest: /opt/kubelini/pki_downloads/ca-key.pem
     mode: get
     overwrite: different
+
+- name: Get the admin kubeconfig
+  s3:
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
+    bucket: "{{ s3_sync_bucket }}"
+    object: "/{{ cluster_id }}/admin/admin.kubeconfig"
+    dest: /opt/kubelini/admin_kubeconfig/admin.kubeconfig
+    mode: get
+    overwrite: different
+  when: download_admin_kubeconfig
+
 
 #- name: Get the kubeconfig files
 #  s3:

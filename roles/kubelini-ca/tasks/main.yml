@@ -67,6 +67,12 @@
     chdir: /opt/kubelini/ca
     creates: kube-proxy.pem
 
+- name: Delete existing node cert
+  file:
+    path: "/opt/kubelini/pki/{{ inventory_hostname }}-csr.json"
+    state: absent
+  when: force_recreate_node_cert|bool
+
 - name: Generate node cert
   shell: >
     sudo cfssl gencert

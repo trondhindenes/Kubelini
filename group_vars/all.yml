@@ -2,6 +2,7 @@
 kubernetes_version: 1.9.0
 
 s3_sync_bucket: kubelinidev
+cluster_id: kubelini1 #used as a s3 folder so you can support multiple clusters per s3 bucket.
 cluster_ip_range: 10.32.0.0/16
 cluster_ip_range_first_ip: 10.32.0.1 #needed for certificate
 cluster_dns_address: 10.32.0.10

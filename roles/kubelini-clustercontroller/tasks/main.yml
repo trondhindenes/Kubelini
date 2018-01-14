@@ -15,31 +15,31 @@
     dest: /var/lib/kubernetes
     state: directory
 
-- name: Copy cert files to kubernetes folder
-  copy:
-    src: "/opt/kubelini/pki/{{ item }}"
-    dest: "/var/lib/kubernetes/{{ item }}"
-    remote_src: yes
-  with_items:
-  - "{{ inventory_hostname }}-key.pem"
-  - "{{ inventory_hostname }}.csr"
-  - "{{ inventory_hostname }}.pem"
+#- name: Copy cert files to kubernetes folder
+#  copy:
+#    src: "/opt/kubelini/pki/{{ item }}"
+#    dest: "/var/lib/kubernetes/{{ item }}"
+#    remote_src: yes
+#  with_items:
+#  - "{{ inventory_hostname }}-key.pem"
+#  - "{{ inventory_hostname }}.csr"
+#  - "{{ inventory_hostname }}.pem"
+#
+#- name: Copy cert files to kubernetes folder
+#  copy:
+#    src: "/opt/kubelini/ca/{{ item }}"
+#    dest: "/var/lib/kubernetes/{{ item }}"
+#    remote_src: yes
+#  with_items:
+#  - ca.pem
+#  - ca-key.pem
 
-- name: Copy cert files to kubernetes folder
-  copy:
-    src: "/opt/kubelini/ca/{{ item }}"
-    dest: "/var/lib/kubernetes/{{ item }}"
-    remote_src: yes
-  with_items:
-  - ca.pem
-  - ca-key.pem
-
-- name: Copy token file to kubernetes folder
-  copy:
-    src: "/opt/kubelini/bootstrap_token/token.csv"
-    dest: "/var/lib/kubernetes/token.csv"
-    remote_src: yes
-  notify: reload kube-apiserver
+#- name: Copy token file to kubernetes folder
+#  copy:
+#    src: "/opt/kubelini/bootstrap_token/token.csv"
+#    dest: "/var/lib/kubernetes/token.csv"
+#    remote_src: yes
+#  notify: reload kube-apiserver
 
 - name: get local ip address
   set_fact:

@@ -13,23 +13,23 @@
     dest: /var/lib/etcd
     state: directory
 
-- name: Copy cert files to etcd folder
-  copy:
-    src: "/opt/kubelini/pki/{{ item }}"
-    dest: "/etc/etcd/{{ item }}"
-    remote_src: yes
-  with_items:
-  - "{{ inventory_hostname }}-key.pem"
-  - "{{ inventory_hostname }}.csr"
-  - "{{ inventory_hostname }}.pem"
+#- name: Copy cert files to etcd folder
+#  copy:
+#    src: "/opt/kubelini/pki/{{ item }}"
+#    dest: "/etc/etcd/{{ item }}"
+#    remote_src: yes
+#  with_items:
+#  - "{{ inventory_hostname }}-key.pem"
+#  - "{{ inventory_hostname }}.csr"
+#  - "{{ inventory_hostname }}.pem"
 
-- name: Copy cert files to etcd folder
-  copy:
-    src: "/opt/kubelini/ca/{{ item }}"
-    dest: "/etc/etcd/{{ item }}"
-    remote_src: yes
-  with_items:
-  - ca.pem
+#- name: Copy cert files to etcd folder
+#  copy:
+#    src: "/opt/kubelini/ca/{{ item }}"
+#    dest: "/etc/etcd/{{ item }}"
+#    remote_src: yes
+#  with_items:
+#  - ca.pem
 
 - name: Download etcd
   get_url:
@@ -60,13 +60,17 @@
   template:
     src: etcd.service.j2
     dest: /etc/systemd/system/etcd.service
-  register: etcd_service_changed
+  #register: etcd_service_changed
+  notify: reload etcd service
 
-- name: start etcd
-  shell: "sudo systemctl enable etcd && sudo systemctl start etcd"
-  when: etcd_service_changed.changed
+- name: flush handlers
+  meta: flush_handlers
 
-- name: start etcd
-  service:
-    name: etcd
-    state: started
+#- name: start etcd
+#  shell: "sudo systemctl enable etcd && sudo systemctl start etcd"
+#  when: etcd_service_changed.changed
+#
+#- name: start etcd
+#  service:
+#    name: etcd
+#    state: started

@@ -5,12 +5,12 @@ Documentation=https://github.com/coreos
 [Service]
 ExecStart=/usr/bin/etcd \
   --name {{ inventory_hostname }} \
-  --cert-file=/etc/etcd/{{ inventory_hostname }}.pem \
-  --key-file=/etc/etcd/{{ inventory_hostname }}-key.pem \
-  --peer-cert-file=/etc/etcd/{{ inventory_hostname }}.pem \
-  --peer-key-file=/etc/etcd/{{ inventory_hostname }}-key.pem \
-  --trusted-ca-file=/etc/etcd/ca.pem \
-  --peer-trusted-ca-file=/etc/etcd/ca.pem \
+  --cert-file=/opt/kubelini/pki/{{ inventory_hostname }}.pem \
+  --key-file=/opt/kubelini/pki/{{ inventory_hostname }}-key.pem \
+  --peer-cert-file=/opt/kubelini/pki/{{ inventory_hostname }}.pem \
+  --peer-key-file=/opt/kubelini/pki/{{ inventory_hostname }}-key.pem \
+  --trusted-ca-file=/opt/kubelini/pki_downloads/ca.pem \
+  --peer-trusted-ca-file=/opt/kubelini/pki_downloads/ca.pem \
   --peer-client-cert-auth \
   --client-cert-auth \
   --initial-advertise-peer-urls https://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2380 \
