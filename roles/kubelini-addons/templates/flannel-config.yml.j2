@@ -73,7 +73,7 @@ data:
     }
   net-conf.json: |
     {
-      "Network": "{{ flannel_allocation_cidr }}",
+      "Network": "{{ network_allocation_cidr }}",
       "Backend": {
         "Type": "vxlan"
       }

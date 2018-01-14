@@ -32,8 +32,7 @@ apiserver_oidc_groups_claim: groups
 
 #Don't change these networking variables after your control plane nodes (masters) are deployed.
 networking_stack: weavenet # set to either weavenet or flannel. 
-weavenet_allocation_cidr: 10.200.0.0/16 #needed if networking_stack is set to weavenet
-flannel_allocation_cidr:  10.200.0.0/16 #needed if networking_stack is set to flannel
+network_allocation_cidr: 10.200.0.0/16 #used by flannel or weavenet to configure the pod ip range
 
 #if you set this var, fill it with users that will be added to "static" users:
 additional_kubernetes_static_users:
