@@ -35,8 +35,8 @@
     object: "{{ cluster_id }}/ca/{{ item }}"
     dest: "/opt/kubelini/ca/{{ item }}"
     mode: get
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
   with_items:
   - ca.pem
   - ca-key.pem
@@ -94,8 +94,8 @@
     key_prefix: "{{ cluster_id }}/ca"
     file_change_strategy: checksum
     include: "ca*.pem"
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     region: "{{ aws_region }}"
 
 - name: Upload bootstrap token to s3
@@ -105,8 +105,8 @@
     key_prefix: "{{ cluster_id }}/bootstrap"
     file_change_strategy: checksum
     include: "*.csv"
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     region: "{{ aws_region }}"
 
 - name: Upload bootstrap token to s3
@@ -116,8 +116,8 @@
     key_prefix: "{{ cluster_id }}/bootstrap"
     file_change_strategy: checksum
     include: "*.kubeconfig"
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     region: "{{ aws_region }}"
 
 - name: Upload admin certs to s3
@@ -127,8 +127,8 @@
     key_prefix: "{{ cluster_id }}/admin"
     file_change_strategy: checksum
     include: "*admin*.*"
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     region: "{{ aws_region }}"
 
 - name: Upload admin kubeconfig to s3
@@ -138,6 +138,6 @@
     key_prefix: "{{ cluster_id }}/admin"
     file_change_strategy: checksum
     include: "*.*"
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     region: "{{ aws_region }}"

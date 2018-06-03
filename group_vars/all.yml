@@ -2,20 +2,20 @@
 kubernetes_version: 1.10.3
 
 s3_sync_bucket: kubelinidev
-cluster_id: kubelini1 #used as a s3 folder so you can support multiple clusters per s3 bucket.
+cluster_id: kubelini10 #used as a s3 folder so you can support multiple clusters per s3 bucket.
 cluster_ip_range: 10.32.0.0/16
 cluster_ip_range_first_ip: 10.32.0.1 #needed for certificate
 cluster_dns_address: 10.32.0.10
 
 #this setting controls the ip range for pods. 
-#Usually this should line up with the weave/flannel cidr defined bellow.
+#Usually this should line up with the network_allocation_cidr variable defined bellow.
 cluster_cidr: 10.200.0.0/16
-
 cluster_domain: cluster.local
 
 #Set this if you have a LB in front of your controllers!
 #If not, use the first master node in your inventory
-kubernetes_cluster_address: 10.245.22.17
+#It can be either an ip address or a hostname, but it must be resolvable for all nodes in the cluster
+kubernetes_cluster_address: 10.245.22.205
 
 #Allow Kubernetes worker nodes to swap (can be enabled for lab scenarios)
 allow_swap: no
@@ -33,6 +33,9 @@ apiserver_oidc_groups_claim: groups
 #Don't change these networking variables after your control plane nodes (masters) are deployed.
 networking_stack: flannel # set to either weavenet or flannel. 
 network_allocation_cidr: 10.200.0.0/16 #used by flannel or weavenet to configure the pod ip range
+
+#Download the admin kubeconfig file on all workers
+download_admin_kubeconfig: yes
 
 #if you set this var, fill it with users that will be added to "static" users:
 additional_kubernetes_static_users:

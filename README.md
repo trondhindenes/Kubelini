@@ -21,7 +21,7 @@ Kubelini deploys Kubernetes 1.9.0 with Docker 1.13 and Weavenet or Flannel
 - Kubelini uses Amazon S3 to distribute certain files (certificates and dynamicly generated config files). Replacing the S3 part with cifs or a similar backend should be fairly easy if s3 is a big no-no for you.
 - Kubelini expects a set of already running nodes, and has only been tested with Ubuntu 16.04.
 - It is expected that networking is alredy configured: full access between the hosts in the cluster, and ssh access from the Ansible control node to all hosts. Kubelini does _not_ require setting up custom routes, as it uses an overlay network for pod communication.
-- You need Ansible. Kubelini was tested with Ansible 2.3.2, but any version above 2.1-ish should work.
+- You need Ansible. Kubelini was tested with Ansible 2.5.2.
 - Target nodes need to satisfy the standard Ansible prereqs - which is essentially python and ssh
 - You ned an inventory containing 1 or more nodes in a group called "kubernetes_master". These hosts will get etcd/apiserver and other "master" workloads installed.
 - You also need a host group called "kubernetes_worker", which should contain 1 or more hosts where actual pods will get scheduled.
@@ -74,6 +74,7 @@ It's worth noting that the inventory group names _are_ referenced a few places i
 All variables can be controlled using group_vars/all.yml. Also, be sure to create / fill inn the following variables in the file `secrets/secrets.yml`:   
 - `aws_access_key_id`
 - `aws_secret_access_key`
+Alternatively, you can make sure your instances (if running in AWS) have roles which provide them access to the configured S3 bucket. In that case, just don't configure these variables.
 
 ### TODO
 - Implement better change tracking. Many of the tasks currently rely on simple `if file exists` logic, and could be made more robust.

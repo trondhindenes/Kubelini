@@ -15,8 +15,8 @@
 
 #- name: Get the node cert files
 #  s3:
-#    aws_access_key: "{{ aws_access_key_id }}"
-#    aws_secret_key: "{{ aws_secret_access_key }}"
+#    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+#    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
 #    bucket: "{{ s3_sync_bucket }}"
 #    object: "/pki/{{ item }}"
 #    dest: /opt/kubelini/pki_downloads/{{ item }}
@@ -29,8 +29,8 @@
 
 - name: Get the ca file
   s3:
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     bucket: "{{ s3_sync_bucket }}"
     object: "/{{ cluster_id }}/ca/ca.pem"
     dest: /opt/kubelini/pki_downloads/ca.pem
@@ -39,8 +39,8 @@
 
 - name: Get the ca key file
   s3:
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     bucket: "{{ s3_sync_bucket }}"
     object: "/{{ cluster_id }}/ca/ca-key.pem"
     dest: /opt/kubelini/pki_downloads/ca-key.pem
@@ -49,8 +49,8 @@
 
 - name: Get the admin kubeconfig
   s3:
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     bucket: "{{ s3_sync_bucket }}"
     object: "/{{ cluster_id }}/admin/admin.kubeconfig"
     dest: /opt/kubelini/admin_kubeconfig/admin.kubeconfig
@@ -61,8 +61,8 @@
 
 #- name: Get the kubeconfig files
 #  s3:
-#    aws_access_key: "{{ aws_access_key_id }}"
-#    aws_secret_key: "{{ aws_secret_access_key }}"
+#    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+#    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
 #    bucket: "{{ s3_sync_bucket }}"
 #    object: "/bootstrap/{{ item }}"
 #    dest: "/opt/kubelini/downloads/{{ item }}"

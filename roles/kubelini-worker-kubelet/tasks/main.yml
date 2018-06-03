@@ -243,3 +243,11 @@
     name: kubelet
     state: started
 
+#We can only do this if the download_admin_kubeconfig flag is set
+- name: Wait until node is ready (check for flannel-specific node annotations)
+  shell: 'kubectl get node --selector "kubernetes.io/hostname"={{ inventory_hostname }} -o "jsonpath={.items[*].metadata.annotations.flannel\.alpha\.coreos\.com/backend-type}" --kubeconfig /opt/kubelini/admin_kubeconfig/admin.kubeconfig'
+  register: kubectl_status
+  until: kubectl_status.stdout == "vxlan"
+  retries: 30
+  delay: 10
+  when: (networking_stack == 'flannel') and (download_admin_kubeconfig is defined) and (download_admin_kubeconfig | bool)

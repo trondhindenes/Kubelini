@@ -121,8 +121,8 @@
 #    key_prefix: pki
 #    file_change_strategy: checksum
 #    include: "*"
-#    aws_access_key: "{{ aws_access_key_id }}"
-#    aws_secret_key: "{{ aws_secret_access_key }}"
+#    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+#    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
 #
 #- name: Upload ca cert to s3
 #  s3_sync:
@@ -131,8 +131,8 @@
 #    key_prefix: ca
 #    file_change_strategy: checksum
 #    include: "ca*.pem"
-#    aws_access_key: "{{ aws_access_key_id }}"
-#    aws_secret_key: "{{ aws_secret_access_key }}"
+#    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+#    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
 #
 #- name: Upload bootstrap token to s3
 #  s3_sync:
@@ -141,8 +141,8 @@
 #    key_prefix: bootstrap
 #    file_change_strategy: checksum
 #    include: "*.csv"
-#    aws_access_key: "{{ aws_access_key_id }}"
-#    aws_secret_key: "{{ aws_secret_access_key }}"
+#    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+#    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
 #
 #- name: Upload bootstrap token to s3
 #  s3_sync:
@@ -151,8 +151,8 @@
 #    key_prefix: bootstrap
 #    file_change_strategy: checksum
 #    include: "*.kubeconfig"
-#    aws_access_key: "{{ aws_access_key_id }}"
-#    aws_secret_key: "{{ aws_secret_access_key }}"
+#    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+#    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
 #
 #- name: Upload admin certs to s3
 #  s3_sync:
@@ -161,5 +161,5 @@
 #    key_prefix: admin
 #    file_change_strategy: checksum
 #    include: "*admin*.*"
-#    aws_access_key: "{{ aws_access_key_id }}"
-#    aws_secret_key: "{{ aws_secret_access_key }}"
+#    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
+#    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
