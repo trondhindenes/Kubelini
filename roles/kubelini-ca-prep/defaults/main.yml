@@ -1,2 +1,3 @@
 encrypt_secrets_at_rest: yes
 force_regenerate_ca_cert: no
+aws_region: eu-west-1

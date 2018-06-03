@@ -4,7 +4,6 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
 ExecStart=/usr/bin/kube-apiserver \
-  --admission-control=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
   --advertise-address={{ local_ip }} \
   --allow-privileged=true \
   --apiserver-count={{ api_servers_count }} \
@@ -14,7 +13,10 @@ ExecStart=/usr/bin/kube-apiserver \
   --audit-log-path=/var/lib/audit.log \
   --authorization-mode=Node,RBAC \
   --bind-address=0.0.0.0 \
-  --client-ca-file=/opt/kubelini/ca/ca.pem \ \
+  --client-ca-file=/opt/kubelini/ca/ca.pem \
+{% if apiserver_cloud_provider %}
+  --cloud-provider={{ apiserver_cloud_provider }} \
+{% endif %}
   --enable-swagger-ui=true \
   --etcd-cafile=/opt/kubelini/pki_downloads/ca.pem \
   --etcd-certfile=/opt/kubelini/pki/{{ inventory_hostname }}.pem \
@@ -39,6 +41,9 @@ ExecStart=/usr/bin/kube-apiserver \
   --oidc-username-claim={{ apiserver_oidc_username_claim }} \
   --oidc-client-id={{ apiserver_oidc_client_id }} \
   --oidc-groups-claim={{ apiserver_oidc_groups_claim }} \
+{% endif %}
+{% if apiserver_admission_control_plugins %}
+  {{_admission_controller_param_name}}={{ apiserver_admission_control_plugins |join(',') }} \
 {% endif %}
   --v=3
 Restart=on-failure

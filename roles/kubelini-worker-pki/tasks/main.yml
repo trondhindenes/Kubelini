@@ -7,6 +7,34 @@
 #    all_master_ips: "{% for h in groups['kubernetes_master'] %}\"{{ hostvars[h]['ansible_default_ipv4']['address'] }}\"{% if not loop.last %},{% endif %}{% endfor %}"
 #    all_worker_ips: "{% for h in groups['kubernetes_worker'] %}\"{{ hostvars[h]['ansible_default_ipv4']['address'] }}\"{% if not loop.last %},{% endif %}{% endfor %}"
 
+- name: Set initial instance fact
+  set_fact:
+    _internal_kubelini_worker_pki_ec2_instance_facts: null
+    _internal_kubelini_worker_pki_ec2_internal_dns_name: null
+    _internal_kubelini_node_name: "{{ inventory_hostname }}"
+
+- block:
+  - name: Get instance id from metadata
+    ec2_metadata_facts:
+
+  - name: Grab ec2 data from api
+    ec2_instance_facts:
+      instance_ids: 
+        - "{{ ansible_ec2_instance_identity_document_instanceid }}"
+      aws_access_key: "{{ aws_access_key | default(omit) }}"
+      aws_secret_key: "{{ aws_secret_key | default(omit) }}"
+      region: "{{ aws_region }}"
+    register: _internal_kubelini_worker_pki_ec2_instance_facts
+
+  - name: Set private dns instance fact
+    set_fact:
+      _internal_kubelini_worker_pki_ec2_internal_dns_name: "{{_internal_kubelini_worker_pki_ec2_instance_facts['instances'][0]['private_dns_name']}}"
+
+  - name: Override hostname
+    set_fact:
+      _internal_kubelini_node_name: "{{ _internal_kubelini_worker_pki_ec2_internal_dns_name }}"
+  when: kubelet_use_ec2_private_dns_hostname | bool
+
 - name: template node csr
   template:
     src: node-csr.json.j2

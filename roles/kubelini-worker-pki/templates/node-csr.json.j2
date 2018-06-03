@@ -1,5 +1,5 @@
 {
-  "CN": "system:node:{{ inventory_hostname }}",
+  "CN": "system:node:{{ _internal_kubelini_node_name }}",
   "hosts": [
     "{{ inventory_hostname }}",
 
@@ -18,6 +18,10 @@
     "{{ kubernetes_cluster_address }}",
     {% endif %}
     "{{ cluster_ip_range_first_ip }}",
+    {# If the variable is set, add it. Adds support for cloud-provider=aws on the kubelet #}
+    {% if _internal_kubelini_worker_pki_ec2_internal_dns_name %}
+    "{{ _internal_kubelini_worker_pki_ec2_internal_dns_name }}",
+    {% endif %}
     "127.0.0.1",
     "localhost",
     "kubernetes.default"

@@ -12,10 +12,16 @@ ExecStart=/usr/bin/kubelet \
   --allow-privileged=true \
   --anonymous-auth=false \
   --client-ca-file=/var/lib/kubernetes/ca.pem \
+{% if kubelet_cloud_provider %}
+  --cloud-provider={{ kubelet_cloud_provider }} \
+{% endif %}
   --cluster-dns={{ cluster_dns_address }} \
   --cluster-domain={{ cluster_domain }} \
   --container-runtime=docker \
   --network-plugin=cni \
+{% if _internal_node_labels_list %}
+  --node-labels={{ _internal_node_labels_list }} \
+{% endif %}
   --serialize-image-pulls=false \
   --register-node=true \
   --tls-cert-file=/var/lib/kubernetes/{{ inventory_hostname }}.pem \

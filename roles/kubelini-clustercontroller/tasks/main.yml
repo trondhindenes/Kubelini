@@ -1,3 +1,21 @@
+- name: Set default version flags
+  set_fact:
+    _is_1_10_or_greater: false
+
+- name: Check if kubernetes version flag
+  set_fact:
+    _is_1_10_or_greater: "{{ kubernetes_version is version('1.10.0', '>=') }}"
+
+- name: Set admission control param flag for > 1.10.0
+  set_fact:
+    _admission_controller_param_name: "--enable-admission-plugins"
+  when: _is_1_10_or_greater | bool
+
+- name: Set admission control param flag for < 1.10.0
+  set_fact:
+    _admission_controller_param_name: "--admission-control"
+  when: not (_is_1_10_or_greater | bool)
+
 - name: Copy kubernetes files into the bin folder
   copy:
     src: "{{ item }}"

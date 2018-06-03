@@ -62,12 +62,12 @@
 
 - name: Download cfssl tools
   get_url:
-    url: https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+    url: "{{ cfssl_url }}"
     dest: /usr/local/bin/cfssl
 
 - name: Download cfssl tools
   get_url:
-    url: https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+    url: "{{ cfssl_json_url }}"
     dest: /usr/local/bin/cfssljson
 
 - name: chmod downloaded files

@@ -85,8 +85,7 @@
 
 - name: Generate admin kubeconfig
   script: generate_admin_kubeconfig.sh "{{ kubernetes_cluster_address }}"
-  args:
-    creates: /opt/kubelini/admin_kubeconfig/admin.kubeconfig
+
 
 - name: Upload ca cert to s3
   s3_sync:
@@ -97,6 +96,7 @@
     include: "ca*.pem"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
+    region: "{{ aws_region }}"
 
 - name: Upload bootstrap token to s3
   s3_sync:
@@ -107,6 +107,7 @@
     include: "*.csv"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
+    region: "{{ aws_region }}"
 
 - name: Upload bootstrap token to s3
   s3_sync:
@@ -117,6 +118,7 @@
     include: "*.kubeconfig"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
+    region: "{{ aws_region }}"
 
 - name: Upload admin certs to s3
   s3_sync:
@@ -127,6 +129,7 @@
     include: "*admin*.*"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
+    region: "{{ aws_region }}"
 
 - name: Upload admin kubeconfig to s3
   s3_sync:
@@ -137,3 +140,4 @@
     include: "*.*"
     aws_access_key: "{{ aws_access_key_id }}"
     aws_secret_key: "{{ aws_secret_access_key }}"
+    region: "{{ aws_region }}"

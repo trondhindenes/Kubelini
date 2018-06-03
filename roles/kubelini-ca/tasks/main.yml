@@ -71,7 +71,7 @@
   file:
     path: "/opt/kubelini/pki/{{ inventory_hostname }}-csr.json"
     state: absent
-  when: force_recreate_node_cert|bool
+  when: force_recreate_node_cert
 
 - name: Generate node cert
   shell: >

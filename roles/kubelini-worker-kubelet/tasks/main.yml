@@ -1,3 +1,22 @@
+
+- block:
+  - name: Get instance id from metadata
+    ec2_metadata_facts:
+
+  - name: Grab ec2 data from api
+    ec2_instance_facts:
+      instance_ids: 
+        - "{{ ansible_ec2_instance_identity_document_instanceid }}"
+      aws_access_key: "{{ aws_access_key | default(omit) }}"
+      aws_secret_key: "{{ aws_secret_key | default(omit) }}"
+      region: "{{ aws_region }}"
+    register: _internal_kubelini_worker_pki_ec2_instance_facts
+
+  - name: Set private dns instance fact
+    set_fact:
+      _internal_kubelini_worker_pki_ec2_internal_dns_name: "{{_internal_kubelini_worker_pki_ec2_instance_facts['instances'][0]['private_dns_name']}}"
+  when: kubelet_use_ec2_hostname | bool
+
 - name: Copy kubernetes worker files into the bin folder
   copy:
     src: "{{ item }}"
@@ -8,8 +27,6 @@
   - "/opt/kubelini/kubelet"
   - "/opt/kubelini/kube-proxy"
   - "/opt/kubelini/kubectl"
-
-
 
 #- name: Set cluster infor to the internal ip of the first controller if not specified
 #  set_fact:
@@ -91,6 +108,7 @@
   get_url:
     url: "https://get.docker.com/builds/Linux/x86_64/docker-{{ docker_version }}.tgz"
     dest: /opt/kubelini/docker.tgz
+    validate_certs: false
 
 - name: create docker temp folder
   file:
@@ -205,6 +223,10 @@
   service:
     name: kube-proxy
     state: started
+
+- name: Flatten kubelet_node_labels into comma-separated list
+  set_fact:
+    _internal_node_labels_list: "{{ kubelet_node_labels | join(',')}}"
 
 - name: template kubelet service config
   template:

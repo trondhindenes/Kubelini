@@ -1,0 +1,8 @@
+#If set to true, the "ec2 PrivateDnsName" will be added to the node cert and used. Enable this if you set the kubelet_cloud_provider flag above
+#Hopefully in a later version of Kubernetes, it will be possible to use custom private host names
+kubelet_use_ec2_private_dns_hostname: false
+
+#if the above is true, ansible needs permissions to grab data from AWS apis. Use either the below variables, or provide the instance role with ec2:read/list permissions
+#aws_access_key: 
+#aws_secret_key: 
+aws_region: eu-west-1

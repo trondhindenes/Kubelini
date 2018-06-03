@@ -64,7 +64,7 @@ items:
             - name: weave
               command:
                 - /home/weave/launch.sh
-              args: ["--ipalloc-range", "{{ network_allocation_cidr }}"]
+              args: ["--ipalloc-range", "{{ weavenet_allocation_cidr }}"]
               env:
                 - name: HOSTNAME
                   valueFrom:
