@@ -1,4 +1,6 @@
-#This playbook preps the cluster components, and is only required to run once or when a "master" is added or removed.
+#This playbook preps the cluster components, and is only required to run once
+#Since kubernetes is using etc, you should NOT change the number of master nodes after the cluster has been deployed.
+
 ---
 #Download required binaries
 - hosts:

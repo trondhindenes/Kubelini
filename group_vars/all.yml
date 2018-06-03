@@ -1,5 +1,5 @@
 ---
-kubernetes_version: 1.9.0
+kubernetes_version: 1.10.3
 
 s3_sync_bucket: kubelinidev
 cluster_id: kubelini1 #used as a s3 folder so you can support multiple clusters per s3 bucket.
@@ -31,7 +31,7 @@ apiserver_oidc_groups_claim: groups
 
 
 #Don't change these networking variables after your control plane nodes (masters) are deployed.
-networking_stack: weavenet # set to either weavenet or flannel. 
+networking_stack: flannel # set to either weavenet or flannel. 
 network_allocation_cidr: 10.200.0.0/16 #used by flannel or weavenet to configure the pod ip range
 
 #if you set this var, fill it with users that will be added to "static" users:

@@ -33,4 +33,4 @@ auto_node_approval: yes
 #set to true to allow swap usage
 allow_swap: false
 
-cni_download_url: https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz
+cni_download_url: https://github.com/containernetworking/plugins/releases/download/v0.7.1/cni-plugins-amd64-v0.7.1.tgz

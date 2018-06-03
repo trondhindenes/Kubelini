@@ -33,6 +33,11 @@ Kubelini deploys Kubernetes 1.9.0 with Docker 1.13 and Weavenet or Flannel
 4. Ip-based communication between apiserver and kubelets: Kubelini explicitly sets the `--kubelet-preferred-address` flag to InternalIP, making sure that apiserver doesn't try and resolve the hostname of nodes when communicating with them. This should increase the robustness of commands like `kubectl log` and `kubectl exec`.
 5. Doesn't assume GCE. You can run Kubelini anywhere. The only opinionated piece is the s3 bucket used for exchanging files.
 
+### Cloud support
+Kubernetes has a special setting, `cloud-provider` which is required in some cases, such as when using the `cluster-autoscaler` for scaling a cluster up and down dynamically. Unfortunately cloud-provider flag not well documented, but kubelini makes a best-effort attempt of supporting it thru the `kubelet_cloud_provider`/`apiserver_cloud_provider` variables. Make sure your nodes are set up with roles providing sufficient permissions if using it.
+
+Also note that when the cloud-provider flag is used with AWS, cluster nodes will no longer use `inventory_hostname` for node names, but the AWS-generated "internal dns name" instead. Kubelini will by default inject the node label `ansible/inventory-hostname` containing the value of `inventory_hostname`.
+
 ### Things you need to do after running site.yml
 Nothing, you should end up with a fully functioning Kubernetes cluster. You can test stuff for example by running (on the same master node as above):   
 `kubectl run netutils --image=trondhindenes/netutils -t -i`   
@@ -58,6 +63,8 @@ kubectl config set-context kubelini \
   --user=kubelini
 kubectl config use-context kubelini
 ```
+
+You can also use the generated 'admin.kubeconfig', which will be generated at `s3://<bucket>/<clusterid>/admin/admin.kubeconfig`
 
 ### Ansible implementation
 Kubelini attempts to not use anything "special" in terms of Ansible functionality. The roles included should be very easy to integrate into an existing Ansible setup, and there's no special "bootstrap script". Simply run `ansible-playbook prep_cluster.yml` for the cluster/master setup, and `ansible-playbook site.yml` to configure workers as you're used to. The `ansible.cfg` file just points to the local role dir and is really not needed if you don't want it - just make sure your global ansible config somehow is able to "resolve" the roles in this repo. Same goes for the inventory file (`hosts`).

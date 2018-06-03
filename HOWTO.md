@@ -19,6 +19,8 @@ Variables in `secrets/secrets.yml`:
 This file _must_ contain two variables:
 `aws_access_key_id` and `aws_secret_access_key`. Put in the credentials of an iam user with read and write access to the S3 bucket configued in `s3_sync_bucket`.
 
+You should look at the various parameters (`defaults/main.yml`) in each role in case you want to configure something.
+
 ### Inventory
 Replace the contents of the `hosts` file with your own values. If you want to use the example playbooks you should change the group names, only the targets.
 
