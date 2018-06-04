@@ -17,6 +17,10 @@ kubelet_cloud_provider:
 #Hopefully in a later version of Kubernetes, it will be possible to use custom private host names
 kubelet_use_ec2_hostname: false
 
+
+#make sure to keep this as a string value
+kubelet_serialize_image_pulls: 'false'
+
 #Use these or provide the ec2 instance with permissions in order for the "kubelet_use_ec2_hostname" thing to work
 #aws_access_key
 #aws_secret_key

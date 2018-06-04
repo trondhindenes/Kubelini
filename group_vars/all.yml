@@ -2,7 +2,11 @@
 kubernetes_version: 1.10.3
 
 s3_sync_bucket: kubelinidev
-cluster_id: kubelini10 #used as a s3 folder so you can support multiple clusters per s3 bucket.
+
+#used as a s3 folder so you can support multiple clusters per s3 bucket.
+#Also used as cluster/user/context name for generated admin kubeconfig
+cluster_id: kubelini10
+
 cluster_ip_range: 10.32.0.0/16
 cluster_ip_range_first_ip: 10.32.0.1 #needed for certificate
 cluster_dns_address: 10.32.0.10
@@ -15,10 +19,16 @@ cluster_domain: cluster.local
 #Set this if you have a LB in front of your controllers!
 #If not, use the first master node in your inventory
 #It can be either an ip address or a hostname, but it must be resolvable for all nodes in the cluster
-kubernetes_cluster_address: 10.245.22.205
+kubernetes_cluster_address: 10.245.22.36
 
 #Allow Kubernetes worker nodes to swap (can be enabled for lab scenarios)
 allow_swap: no
+
+
+#If set to true, this creates the apiserver inside a kublet running on the master nodes.
+#This more closely resembles "standard" kubernetes setups, and it allows the apiserver
+#to use services without an ingress, which is nice when using Admission Controller Webhooks.
+apiserver_run_in_pod: yes
 
 #Add oidc integration, see the defaults in the kubelini-clustercontroller role for more info
 apiserver_oidc_enable: no
