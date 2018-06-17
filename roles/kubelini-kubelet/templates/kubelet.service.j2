@@ -30,7 +30,11 @@ ExecStart=/usr/bin/kubelet \
   --image-gc-high-threshold={{ image_gc_high_threshold }} \
   --maximum-dead-containers-per-container={{ maximum_dead_containers_per_container }} \
   --hostname-override={{ inventory_hostname }} \
-  --pod-manifest-path=/etc/kubernetes/manifests
+  --pod-manifest-path=/etc/kubernetes/manifests \
+{% if kubelet_enable_authentication %}
+  --authentication-token-webhook=true \
+  --authorization-mode=Webhook \
+{% endif %}
   --v=2
 Restart=on-failure
 RestartSec=5

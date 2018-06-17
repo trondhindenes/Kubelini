@@ -13,6 +13,11 @@ cni_download_url: https://github.com/containernetworking/plugins/releases/downlo
 #Hopefully in a later version of Kubernetes, it will be possible to use custom private host names
 kubelet_use_ec2_hostname: false
 
+#if true, will enable the following flags in kubelet config:
+#  --authentication-token-webhook=true
+#  --authorization-mode=Webhook
+#This is a requirement for the prometheus operator, among others
+kubelet_enable_authentication: false
 
 #make sure to keep this as a string value
 kubelet_serialize_image_pulls: 'false'

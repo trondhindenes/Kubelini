@@ -31,6 +31,12 @@ aws_region: eu-west-1
 kubelet_node_labels:
 - "ansible/inventory-hostname={{ inventory_hostname }}"
 
+#if true, will enable the following flags in kubelet config:
+#  --authentication-token-webhook=true
+#  --authorization-mode=Webhook
+#This is a requirement for the prometheus operator, among others
+kubelet_enable_authentication: false
+
 #Auto-approve new node registrations
 auto_node_approval: yes
 
