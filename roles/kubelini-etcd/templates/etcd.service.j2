@@ -20,6 +20,9 @@ ExecStart=/usr/bin/etcd \
   --advertise-client-urls https://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:2379 \
   --initial-cluster-token etcd-cluster-0 \
   --initial-cluster-state new \
+{% if kubelini_etcd_auto_compaction_retention_enabled == True %}
+  --auto-compaction-retention={{ kubelini_etcd_auto_compaction_retention_value }} \
+{% endif %}
   --data-dir=/var/lib/etcd
 Restart=on-failure
 RestartSec=5
