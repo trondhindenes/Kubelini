@@ -84,21 +84,25 @@
   - /etc/kubernetes
   - /etc/kubernetes/manifests
 
-- name: Template kube-apiserver to run in kubelet
-  template:
-    src: kube-apiserver.yml.j2
-    dest: /etc/kubernetes/manifests/kube-apiserver.yaml
-  when: apiserver_run_in_pod | bool
+- block: #Prep masters as a kubernetes node
+  - name: Configure PKI for kubelet/worker
+    include_role:
+      name: kubelini-worker-pki
 
-- name: Configure local kubelet/worker with master taint
-  include_role:
-    name: kubelini-worker-kubelet
-  vars:
-    kubelet_role: 'master'
-    worker_check_ready: no
-    kubelet_node_labels:
-    - "ansible/inventory-hostname={{ inventory_hostname }}"
-    - "node-role.kubernetes.io/master=''"
+  - name: Template kube-apiserver to run in kubelet
+    template:
+      src: kube-apiserver.yml.j2
+      dest: /etc/kubernetes/manifests/kube-apiserver.yaml
+
+  - name: Configure local kubelet/worker with master taint
+    include_role:
+      name: kubelini-worker-kubelet
+    vars:
+      kubelet_role: 'master'
+      worker_check_ready: no
+      kubelet_node_labels:
+      - "ansible/inventory-hostname={{ inventory_hostname }}"
+      - "node-role.kubernetes.io/master=''"
   when: apiserver_run_in_pod | bool
 
 - name: template controller-manager config
