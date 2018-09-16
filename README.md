@@ -13,6 +13,7 @@ This repo is not finished in any way
 As an excerise for learning the ins and outs of Kubernetes, I decided to create an Ansible-based deployment of Kelsey Hightower's "Kubernetes the hard way" (https://github.com/kelseyhightower/kubelini).
 
 Kubelini does not match "Kubernetes the hard way" 100%, there are slight differences in networking and some of the PKI stuff (see below). However, most of the components are configured as identical as possible to the original.
+EDIT: This is not completely true anymore.
 
 ### What gets deployed
 Kubelini deploys Kubernetes 1.9.0 with Docker 1.13 and Weavenet or Flannel
@@ -27,10 +28,11 @@ Kubelini deploys Kubernetes 1.9.0 with Docker 1.13 and Weavenet or Flannel
 
 ### Differences from "Kubernetes the hard way"
 1. Certificates: Both Kubernetes and etcd relies on PKI, so there's a lot of certs flying aronud. In "Kubernetes the hard way", a single certificate containing all cluster node ip addresses is used with Kubernetes. Kubelini on the other hand, generates a uniqe cert per node. This allows for scaling out the cluster later, without having to re-issue certificates for every node.
-2. Self-signed kubelet certs: "Kubernetes the hard way" uses a new feature in kubelets where a kubelet can auto-generate its own certificate. These auto-generated certificates have some naming issues, so Kubelini uses the per-node certificates described above. This is implemented by first starting the kubelet in "registration mode", and then replacing the certs before restarting. I haven't been able to find a combination of kubelet params that allow this done in any other way (but I'm not giving up on it just yet).
-3. Networking: "Kubernetes the hard way" uses kubenet, while Kubelini uses weavenet. The primary reason for this is that by using an overlay we don't have to configure routes on each host or in the network's router. Weavenet takes care of all that. Implementing other cni-based plugins instead shouldn't be too hard.
+2. ~~Self-signed kubelet certs: "Kubernetes the hard way" uses a new feature in kubelets where a kubelet can auto-generate its own certificate. These auto-generated certificates have some naming issues, so Kubelini uses the per-node certificates described above. This is implemented by first starting the kubelet in "registration mode", and then replacing the certs before restarting. I haven't been able to find a combination of kubelet params that allow this done in any other way (but I'm not giving up on it just yet).~~
+3. Networking: "Kubernetes the hard way" uses kubenet, while Kubelini uses cni (weavenet or flannel). The primary reason for this is that by using an overlay we don't have to configure routes on each host or in the network's router. CNI plugins take care of all that. Implementing other cni-based plugins instead shouldn't be too hard.
 4. Ip-based communication between apiserver and kubelets: Kubelini explicitly sets the `--kubelet-preferred-address` flag to InternalIP, making sure that apiserver doesn't try and resolve the hostname of nodes when communicating with them. This should increase the robustness of commands like `kubectl log` and `kubectl exec`.
-5. Doesn't assume GCE. You can run Kubelini anywhere. The only opinionated piece is the s3 bucket used for exchanging files.
+5. Doesn't assume GCE. You can run Kubelini anywhere. The only opinionated piece is the s3 bucket used for exchanging files. That said, the only cloud provider tests is the "aws" one, which you can enable using config variables.
+6. Supports running the apiserver in a pod. This is maybe the biggest difference between "Kubernetes the hard way" and most "Kubernetes Distributions". Kubelini simply allows you to choose whether to run the Apiserver as a regular service using systemd or in a pod using the "pod-manifest-folder" functionality of Kubelet. So you get to choose!
 
 ### Cloud support
 Kubernetes has a special setting, `cloud-provider` which is required in some cases, such as when using the `cluster-autoscaler` for scaling a cluster up and down dynamically. Unfortunately cloud-provider flag not well documented, but kubelini makes a best-effort attempt of supporting it thru the `kubelet_cloud_provider`/`apiserver_cloud_provider` variables. Make sure your nodes are set up with roles providing sufficient permissions if using it.
