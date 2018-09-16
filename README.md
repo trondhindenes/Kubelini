@@ -16,12 +16,13 @@ Kubelini does not match "Kubernetes the hard way" 100%, there are slight differe
 EDIT: This is not completely true anymore.
 
 ### What gets deployed
-Kubelini deploys Kubernetes 1.9.0 with Docker 1.13 and Weavenet or Flannel
+Kubelini deploys Kubernetes (choice of version is up to you) with Docker 1.13 and Weavenet or Flannel. Most (if not all) testing is done with Flannel.
+
 ### Prerequisites
 - Kubelini uses Amazon S3 to distribute certain files (certificates and dynamicly generated config files). Replacing the S3 part with cifs or a similar backend should be fairly easy if s3 is a big no-no for you.
 - Kubelini expects a set of already running nodes, and has only been tested with Ubuntu 16.04.
-- It is expected that networking is alredy configured: full access between the hosts in the cluster, and ssh access from the Ansible control node to all hosts. Kubelini does _not_ require setting up custom routes, as it uses an overlay network for pod communication.
-- You need Ansible. Kubelini was tested with Ansible 2.5.2.
+- It is expected that networking is alredy configured: full access between the hosts in the cluster, and ssh access from the Ansible control node to all hosts. Kubelini does _not_ require setting up custom routes, as it uses overlay networking (cni) for pod communication.
+- You need Ansible. Kubelini was tested with Ansible 2.5.5.
 - Target nodes need to satisfy the standard Ansible prereqs - which is essentially python and ssh
 - You ned an inventory containing 1 or more nodes in a group called "kubernetes_master". These hosts will get etcd/apiserver and other "master" workloads installed.
 - You also need a host group called "kubernetes_worker", which should contain 1 or more hosts where actual pods will get scheduled.
@@ -35,15 +36,12 @@ Kubelini deploys Kubernetes 1.9.0 with Docker 1.13 and Weavenet or Flannel
 6. Supports running the apiserver in a pod. This is maybe the biggest difference between "Kubernetes the hard way" and most "Kubernetes Distributions". Kubelini simply allows you to choose whether to run the Apiserver as a regular service using systemd or in a pod using the "pod-manifest-folder" functionality of Kubelet. So you get to choose!
 
 ### Cloud support
-Kubernetes has a special setting, `cloud-provider` which is required in some cases, such as when using the `cluster-autoscaler` for scaling a cluster up and down dynamically. Unfortunately cloud-provider flag not well documented, but kubelini makes a best-effort attempt of supporting it thru the `kubelet_cloud_provider`/`apiserver_cloud_provider` variables. Make sure your nodes are set up with roles providing sufficient permissions if using it.
+Kubernetes has a special setting, `cloud-provider` which is required in some cases, such as when using the `cluster-autoscaler` for scaling a cluster up and down dynamically. Unfortunately the cloud-provider flag is not well documented, but kubelini makes a best-effort attempt of supporting it thru the `kubelet_cloud_provider`/`apiserver_cloud_provider` variables. Make sure your nodes are set up with roles providing sufficient permissions if using it.
 
 Also note that when the cloud-provider flag is used with AWS, cluster nodes will no longer use `inventory_hostname` for node names, but the AWS-generated "internal dns name" instead. Kubelini will by default inject the node label `ansible/inventory-hostname` containing the value of `inventory_hostname`.
 
 ### Things you need to do after running site.yml
-Nothing, you should end up with a fully functioning Kubernetes cluster. You can test stuff for example by running (on the same master node as above):   
-`kubectl run netutils --image=trondhindenes/netutils -t -i`   
-And test that you're able to resolve addresses on the internet by using   
-`dig www.google.com`
+Nothing, you should end up with a fully functioning Kubernetes cluster. You can test stuff for example by running: `kubectl run netutils --image=trondhindenes/netutils -t -i` and test that you're able to resolve addresses on the internet by using `dig www.google.com` (this also tests the kube-dns addon).
 
 ### Using kubectl locally against your cluster
 After kubelini has been set up, grab the ca.pem cert and the admin.pem and admin-key.pem from the s3 bucket you've used.
