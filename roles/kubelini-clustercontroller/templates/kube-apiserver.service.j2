@@ -3,6 +3,7 @@ Description=Kubernetes API Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
+LimitNOFILE=4096
 ExecStart=/usr/bin/kube-apiserver \
   --advertise-address={{ local_ip }} \
   --allow-privileged=true \

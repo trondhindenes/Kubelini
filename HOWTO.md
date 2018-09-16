@@ -15,8 +15,9 @@ Group vars: in `groups_vars/all.yml`, make sure you've configed the following:
 
 The rest of the settings in `groups_vars/all.yml` should have "sane defaults" and you're not required to change them.
 
+Kubelini supports standard AWS IAM roles, or you can put explicit credentials in the `secrets/secrets.yml` file:
 Variables in `secrets/secrets.yml`:   
-This file _must_ contain two variables:
+If used, this file _must_ contain two variables:
 `aws_access_key_id` and `aws_secret_access_key`. Put in the credentials of an iam user with read and write access to the S3 bucket configued in `s3_sync_bucket`.
 
 You should look at the various parameters (`defaults/main.yml`) in each role in case you want to configure something.

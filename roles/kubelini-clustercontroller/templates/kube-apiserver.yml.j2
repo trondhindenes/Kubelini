@@ -1,0 +1,89 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --advertise-address={{ local_ip }}
+    - --allow-privileged=true
+    - --apiserver-count={{ api_servers_count }}
+    - --audit-log-maxage=30
+    - --audit-log-maxbackup=3
+    - --audit-log-maxsize=100
+    - --audit-log-path=/var/lib/audit.log
+    - --authorization-mode=Node,RBAC
+    - --client-ca-file=/opt/kubelini/ca/ca.pem
+{% if apiserver_cloud_provider %}
+    - --cloud-provider={{ apiserver_cloud_provider }}
+{% endif %}
+    - --enable-swagger-ui=true
+    - --etcd-cafile=/opt/kubelini/pki_downloads/ca.pem
+    - --etcd-certfile=/opt/kubelini/pki/{{ inventory_hostname }}.pem
+    - --etcd-keyfile=/opt/kubelini/pki/{{ inventory_hostname }}-key.pem
+    - --etcd-servers={{ etcd_ips }}
+    - --event-ttl=1h
+    - --kubelet-certificate-authority=/opt/kubelini/pki_downloads/ca.pem
+    - --kubelet-client-certificate=/opt/kubelini/pki/{{ inventory_hostname }}.pem
+    - --kubelet-client-key=/opt/kubelini/pki/{{ inventory_hostname }}-key.pem
+    - --kubelet-preferred-address-types=InternalIP
+    - --kubelet-https=true
+    - --runtime-config=api/all
+    - --service-account-key-file=/opt/kubelini/ca/ca-key.pem
+    - --service-cluster-ip-range={{ cluster_ip_range }}
+    - --service-node-port-range=30000-32767
+    - --tls-cert-file=/opt/kubelini/pki/{{ inventory_hostname }}.pem
+    - --tls-private-key-file=/opt/kubelini/pki/{{ inventory_hostname }}-key.pem
+    - --token-auth-file=/opt/kubelini/bootstrap_token/token.csv
+    - --proxy-client-key-file=/opt/kubelini/pki/{{ inventory_hostname }}-key.pem
+    - --proxy-client-cert-file=/opt/kubelini/pki/{{ inventory_hostname }}.pem
+    - --requestheader-client-ca-file=/opt/kubelini/pki_downloads/ca.pem
+{% if apiserver_oidc_enable %}
+    - --oidc-issuer-url={{ apiserver_oidc_issuer_url }}
+    - --oidc-username-claim={{ apiserver_oidc_username_claim }}
+    - --oidc-client-id={{ apiserver_oidc_client_id }}
+    - --oidc-groups-claim={{ apiserver_oidc_groups_claim }}
+{% endif %}
+{% if apiserver_admission_control_plugins %}
+    - {{_admission_controller_param_name}}={{ apiserver_admission_control_plugins |join(',') }}
+{% endif %}
+    - --v=3
+    image: k8s.gcr.io/kube-apiserver-amd64:v{{ kubernetes_version }}
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: {{ local_ip }}
+        path: /healthz
+        port: 6443
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    name: kube-apiserver
+    resources:
+      requests:
+        cpu: 250m
+    volumeMounts:
+    - mountPath: /opt/kubelini
+      name: k8s-certs
+      readOnly: true
+    ports:
+      - containerPort: 6443
+        hostPort: 6443
+      - containerPort: 8080
+        hostPort: 8080
+  hostNetwork: true
+  volumes:
+  - name: k8s-certs
+    hostPath:
+      path: /opt/kubelini
+      type: DirectoryOrCreate
+
+status: {}

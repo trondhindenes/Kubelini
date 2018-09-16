@@ -22,13 +22,18 @@ ExecStart=/usr/bin/kubelet \
 {% if _internal_node_labels_list %}
   --node-labels={{ _internal_node_labels_list }} \
 {% endif %}
-  --serialize-image-pulls=false \
+{% if kubelet_enable_authentication %}
+  --authentication-token-webhook=true \
+  --authorization-mode=Webhook \
+{% endif %}
+  --serialize-image-pulls={{ kubelet_serialize_image_pulls }} \
   --register-node=true \
   --tls-cert-file=/var/lib/kubernetes/{{ inventory_hostname }}.pem \
   --tls-private-key-file=/var/lib/kubernetes/{{ inventory_hostname }}-key.pem \
   --v=2 \
   --kubeconfig=/var/lib/kubelet/{{ inventory_hostname }}.kubeconfig \
   --image-gc-high-threshold={{ image_gc_high_threshold }} \
+  --pod-manifest-path=/etc/kubernetes/manifests \
   --maximum-dead-containers-per-container={{ maximum_dead_containers_per_container }} \
   --hostname-override={{ inventory_hostname }}
 Restart=on-failure

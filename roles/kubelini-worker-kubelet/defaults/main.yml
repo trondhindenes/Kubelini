@@ -17,6 +17,10 @@ kubelet_cloud_provider:
 #Hopefully in a later version of Kubernetes, it will be possible to use custom private host names
 kubelet_use_ec2_hostname: false
 
+
+#make sure to keep this as a string value
+kubelet_serialize_image_pulls: 'false'
+
 #Use these or provide the ec2 instance with permissions in order for the "kubelet_use_ec2_hostname" thing to work
 #aws_access_key
 #aws_secret_key
@@ -27,6 +31,12 @@ aws_region: eu-west-1
 kubelet_node_labels:
 - "ansible/inventory-hostname={{ inventory_hostname }}"
 
+#if true, will enable the following flags in kubelet config:
+#  --authentication-token-webhook=true
+#  --authorization-mode=Webhook
+#This is a requirement for the prometheus operator, among others
+kubelet_enable_authentication: false
+
 #Auto-approve new node registrations
 auto_node_approval: yes
 
@@ -34,3 +44,6 @@ auto_node_approval: yes
 allow_swap: false
 
 cni_download_url: https://github.com/containernetworking/plugins/releases/download/v0.7.1/cni-plugins-amd64-v0.7.1.tgz
+
+#Setting this to false will disable final wait for node to be ready
+worker_check_ready: true

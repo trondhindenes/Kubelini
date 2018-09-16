@@ -57,7 +57,7 @@
   roles: 
   - kubelini-clustercontroller
 
-#Configure weavenet and kubedns. This is a one-time thing.
+#Configure cni network plugin and kubedns. This is a one-time thing.
 - hosts:
   - kubernetes_master[0]
   become: yes

@@ -33,7 +33,7 @@
   - name: Override hostname
     set_fact:
       _internal_kubelini_node_name: "{{ _internal_kubelini_worker_pki_ec2_internal_dns_name }}"
-  when: kubelet_use_ec2_private_dns_hostname | bool
+  when: kubelet_use_ec2_hostname | bool
 
 - name: template node csr
   template:

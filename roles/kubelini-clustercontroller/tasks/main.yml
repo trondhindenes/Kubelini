@@ -74,6 +74,36 @@
     dest: /etc/systemd/system/kube-apiserver.service
   notify:
   - reload kube-apiserver
+  when: not apiserver_run_in_pod | bool
+
+- name: create kubelet folders
+  file:
+    dest: "{{ item }}"
+    state: directory
+  with_items:
+  - /etc/kubernetes
+  - /etc/kubernetes/manifests
+
+- block: #Prep masters as a kubernetes node
+  - name: Configure PKI for kubelet/worker
+    include_role:
+      name: kubelini-worker-pki
+
+  - name: Template kube-apiserver to run in kubelet
+    template:
+      src: kube-apiserver.yml.j2
+      dest: /etc/kubernetes/manifests/kube-apiserver.yaml
+
+  - name: Configure local kubelet/worker with master taint
+    include_role:
+      name: kubelini-worker-kubelet
+    vars:
+      kubelet_role: 'master'
+      worker_check_ready: no
+      kubelet_node_labels:
+      - "ansible/inventory-hostname={{ inventory_hostname }}"
+      - "node-role.kubernetes.io/master=''"
+  when: apiserver_run_in_pod | bool
 
 - name: template controller-manager config
   template:
@@ -101,6 +131,7 @@
   service:
     name: kube-apiserver
     state: started
+  when: not apiserver_run_in_pod | bool
 
 - name: start kube-scheduler service
   service:
