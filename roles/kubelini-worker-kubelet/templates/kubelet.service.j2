@@ -33,6 +33,7 @@ ExecStart=/usr/bin/kubelet \
   --v=2 \
   --kubeconfig=/var/lib/kubelet/{{ inventory_hostname }}.kubeconfig \
   --image-gc-high-threshold={{ image_gc_high_threshold }} \
+  --pod-manifest-path=/etc/kubernetes/manifests \
   --maximum-dead-containers-per-container={{ maximum_dead_containers_per_container }} \
   --hostname-override={{ inventory_hostname }}
 Restart=on-failure

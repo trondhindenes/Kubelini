@@ -118,18 +118,25 @@
   notify:
   - reload docker service
 
-#TODO: Idempodency here. Generate to a temp dir, and then compare.
-- name: Generate local kubeconfig
-  script: generate_node_kubeconfig.sh "{{ kubernetes_cluster_address }}"
-  args:
-    creates: "/opt/kubelini/{{ inventory_hostname }}.kubeconfig"
-#  when: kubelet_role == 'worker'
+- name: create temporary kubeconfig directory
+  tempfile:
+    state: directory
+    suffix: kubeconfig
+  register: kubeconfig_temp
 
-#- name: Generate local kubeconfig
-#  script: generate_node_kubeconfig.sh "127.0.0.1"
-#  args:
-#    creates: "/opt/kubelini/{{ inventory_hostname }}.kubeconfig"
-#  when: kubelet_role == 'master'
+- name: Generate temporary local kubeconfig
+  script: generate_node_kubeconfig.sh "{{ kubernetes_cluster_address }}" "{{ kubeconfig_temp['path'] }}/{{ inventory_hostname }}.kubeconfig"
+
+- name: Copy temp kubeconfig
+  copy:
+    src: "{{ kubeconfig_temp['path'] }}/{{ inventory_hostname }}.kubeconfig"
+    dest: "/opt/kubelini/{{ inventory_hostname }}.kubeconfig"
+    remote_src: yes
+
+- name: Delete temp dir
+  file:
+    state: absent
+    path: "{{ kubeconfig_temp['path'] }}"
 
 - name: create kube-proxy bootstrap
   script: generate_kubeproxy_config.sh "{{ kubernetes_cluster_address }}"

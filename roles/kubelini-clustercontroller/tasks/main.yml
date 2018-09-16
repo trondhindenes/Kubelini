@@ -83,7 +83,6 @@
   with_items:
   - /etc/kubernetes
   - /etc/kubernetes/manifests
-  when: apiserver_run_in_pod | bool
 
 - name: Template kube-apiserver to run in kubelet
   template:
@@ -91,11 +90,12 @@
     dest: /etc/kubernetes/manifests/kube-apiserver.yaml
   when: apiserver_run_in_pod | bool
 
-- name: Configure local kubelet
+- name: Configure local kubelet/worker with master taint
   include_role:
-    name: kubelini-kubelet
+    name: kubelini-worker-kubelet
   vars:
     kubelet_role: 'master'
+    worker_check_ready: no
     kubelet_node_labels:
     - "ansible/inventory-hostname={{ inventory_hostname }}"
     - "node-role.kubernetes.io/master=''"

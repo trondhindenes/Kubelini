@@ -1,17 +1,26 @@
-- name: create etcd folder
+- name: create etcd folders
   file:
-    dest: /etc/etcd
+    dest: "{{ item }}"
     state: directory
+  with_items:
+  - /etc/etcd
+  - /opt/kubelini/etcd
+  - /var/lib/etcd
 
-- name: create etcd temp folder
-  file:
-    dest: /opt/kubelini/etcd
-    state: directory
+# - name: create etcd folder
+#   file:
+#     dest: /etc/etcd
+#     state: directory
 
-- name: create etcd data folder
-  file:
-    dest: /var/lib/etcd
-    state: directory
+# - name: create etcd temp folder
+#   file:
+#     dest: /opt/kubelini/etcd
+#     state: directory
+
+# - name: create etcd data folder
+#   file:
+#     dest: /var/lib/etcd
+#     state: directory
 
 #- name: Copy cert files to etcd folder
 #  copy:

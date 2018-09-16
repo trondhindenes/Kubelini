@@ -33,11 +33,6 @@
 #    kubernetes_cluster_address: "{{ hostvars[groups['kubernetes_master'][0]]['ansible_eth0']['ipv4']['address'] }}"
 #  when: not kubernetes_cluster_address is defined
 
-#TODO: Idempodency here. Generate to a temp dir, and then compare.
-- name: Generate local kubeconfig
-  script: generate_node_kubeconfig.sh "{{ kubernetes_cluster_address }}"
-  args:
-    creates: "/opt/kubelini/{{ inventory_hostname }}.kubeconfig"
 
 - name: create kubelet folders
   file:
@@ -48,6 +43,28 @@
   - /var/lib/kube-proxy
   - /var/lib/kubernetes
   - /var/run/kubernetes
+  - /etc/kubernetes
+  - /etc/kubernetes/manifests
+
+- name: create temporary kubeconfig directory
+  tempfile:
+    state: directory
+    suffix: kubeconfig
+  register: kubeconfig_temp
+
+- name: Generate temporary local kubeconfig
+  script: generate_node_kubeconfig.sh "{{ kubernetes_cluster_address }}" "{{ kubeconfig_temp['path'] }}/{{ inventory_hostname }}.kubeconfig"
+
+- name: Copy temp kubeconfig
+  copy:
+    src: "{{ kubeconfig_temp['path'] }}/{{ inventory_hostname }}.kubeconfig"
+    dest: "/opt/kubelini/{{ inventory_hostname }}.kubeconfig"
+    remote_src: yes
+
+- name: Delete temp dir
+  file:
+    state: absent
+    path: "{{ kubeconfig_temp['path'] }}"
 
 - name: Copy the kubelet kubeconfig file
   copy:
@@ -250,4 +267,4 @@
   until: kubectl_status.stdout == "vxlan"
   retries: 30
   delay: 10
-  when: (networking_stack == 'flannel') and (download_admin_kubeconfig is defined) and (download_admin_kubeconfig | bool)
+  when: (networking_stack == 'flannel') and (download_admin_kubeconfig is defined) and (download_admin_kubeconfig | bool) and (worker_check_ready | bool)
