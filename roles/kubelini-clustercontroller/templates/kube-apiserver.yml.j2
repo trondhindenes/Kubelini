@@ -36,7 +36,7 @@ spec:
     - --kubelet-client-key=/opt/kubelini/pki/{{ inventory_hostname }}-key.pem
     - --kubelet-preferred-address-types=InternalIP
     - --kubelet-https=true
-    - --runtime-config=api/all
+    - --runtime-config='api/all=true,admissionregistration.k8s.io/v1alpha1=true'
     - --service-account-key-file=/opt/kubelini/ca/ca-key.pem
     - --service-cluster-ip-range={{ cluster_ip_range }}
     - --service-node-port-range=30000-32767

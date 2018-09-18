@@ -127,11 +127,24 @@
     name: kube-controller-manager
     state: started
 
+- name: check apiserver service state
+  service_facts:
+
 - name: start apiserver service
   service:
     name: kube-apiserver
     state: started
   when: not apiserver_run_in_pod | bool
+
+- name: stop apiserver service if installed
+  service:
+    name: kube-apiserver
+    state: stopped
+  when: (apiserver_run_in_pod | bool) and ('kube-apiserver.service' in services)
+
+- name: remove apiserver service if installed (only when transitioning to in-pod kube-apiserver)
+  shell: rm /etc/systemd/system/kube-apiserver.service && systemctl daemon-reload
+  when: (apiserver_run_in_pod | bool) and ('kube-apiserver.service' in services)
 
 - name: start kube-scheduler service
   service:
