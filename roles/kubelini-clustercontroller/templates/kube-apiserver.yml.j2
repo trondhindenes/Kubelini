@@ -74,6 +74,9 @@ spec:
     - mountPath: /opt/kubelini
       name: k8s-certs
       readOnly: true
+    - name: host-ca-certs
+      mountPath: /etc/ssl/certs
+      readOnly: true
     ports:
       - containerPort: 6443
         hostPort: 6443
@@ -85,5 +88,10 @@ spec:
     hostPath:
       path: /opt/kubelini
       type: DirectoryOrCreate
+  - name: host-ca-certs
+    hostPath:
+      path: /etc/ssl/certs
+      type: DirectoryOrCreate
+      
 
 status: {}
