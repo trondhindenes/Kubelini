@@ -7,39 +7,6 @@
   - /opt/kubelini/etcd
   - /var/lib/etcd
 
-# - name: create etcd folder
-#   file:
-#     dest: /etc/etcd
-#     state: directory
-
-# - name: create etcd temp folder
-#   file:
-#     dest: /opt/kubelini/etcd
-#     state: directory
-
-# - name: create etcd data folder
-#   file:
-#     dest: /var/lib/etcd
-#     state: directory
-
-#- name: Copy cert files to etcd folder
-#  copy:
-#    src: "/opt/kubelini/pki/{{ item }}"
-#    dest: "/etc/etcd/{{ item }}"
-#    remote_src: yes
-#  with_items:
-#  - "{{ inventory_hostname }}-key.pem"
-#  - "{{ inventory_hostname }}.csr"
-#  - "{{ inventory_hostname }}.pem"
-
-#- name: Copy cert files to etcd folder
-#  copy:
-#    src: "/opt/kubelini/ca/{{ item }}"
-#    dest: "/etc/etcd/{{ item }}"
-#    remote_src: yes
-#  with_items:
-#  - ca.pem
-
 - name: Download etcd
   get_url:
     url: https://github.com/coreos/etcd/releases/download/v3.1.4/etcd-v3.1.4-linux-amd64.tar.gz
@@ -69,17 +36,8 @@
   template:
     src: etcd.service.j2
     dest: /etc/systemd/system/etcd.service
-  #register: etcd_service_changed
   notify: reload etcd service
 
 - name: flush handlers
   meta: flush_handlers
 
-#- name: start etcd
-#  shell: "sudo systemctl enable etcd && sudo systemctl start etcd"
-#  when: etcd_service_changed.changed
-#
-#- name: start etcd
-#  service:
-#    name: etcd
-#    state: started
