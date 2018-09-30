@@ -14,6 +14,7 @@ apiserver_oidc_client_id:
 apiserver_oidc_groups_claim:
 apiserver_cloud_provider: #set this to aws for instance
 apiserver_loglevel: "1"
+apiserver_requestheader_allowed_names: front-proxy-client
 
 #enable the admission control plugins you want:
 apiserver_admission_control_plugins:

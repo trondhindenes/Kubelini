@@ -90,6 +90,8 @@ metadata:
 spec:
   template:
     metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
         tier: node
         app: flannel

@@ -48,7 +48,7 @@ spec:
     - --proxy-client-key-file=/opt/kubelini/pki/front-proxy-client-key.pem
     - --proxy-client-cert-file=/opt/kubelini/pki/front-proxy-client.pem
     - --requestheader-client-ca-file=/opt/kubelini/pki_downloads/ca.pem
-    - --requestheader-allowed-names=front-proxy-client
+    - --requestheader-allowed-names={{ apiserver_requestheader_allowed_names }}
     - --requestheader-extra-headers-prefix=X-Remote-Extra-
     - --requestheader-group-headers=X-Remote-Group
     - --requestheader-username-headers=X-Remote-User
