@@ -13,6 +13,7 @@ apiserver_oidc_username_claim:
 apiserver_oidc_client_id:
 apiserver_oidc_groups_claim:
 apiserver_cloud_provider: #set this to aws for instance
+apiserver_loglevel: "1"
 
 #enable the admission control plugins you want:
 apiserver_admission_control_plugins:

@@ -25,6 +25,7 @@ ExecStart=/usr/bin/kube-apiserver \
   --etcd-servers={{ etcd_ips }} \
   --event-ttl=1h \
   --insecure-bind-address=127.0.0.1 \
+  --insecure-port=8080 \
   --kubelet-certificate-authority=/opt/kubelini/pki_downloads/ca.pem \
   --kubelet-client-certificate=/opt/kubelini/pki/{{ inventory_hostname }}.pem \
   --kubelet-client-key=/opt/kubelini/pki/{{ inventory_hostname }}-key.pem \
@@ -53,7 +54,7 @@ ExecStart=/usr/bin/kube-apiserver \
 {% if apiserver_admission_control_plugins %}
   {{_admission_controller_param_name}}={{ apiserver_admission_control_plugins |join(',') }} \
 {% endif %}
-  --v=3
+  --v={{ apiserver_loglevel }}
 Restart=on-failure
 RestartSec=5
 

@@ -5,7 +5,7 @@ s3_sync_bucket: kubelinidev
 
 #used as a s3 folder so you can support multiple clusters per s3 bucket.
 #Also used as cluster/user/context name for generated admin kubeconfig
-cluster_id: kubelini13
+cluster_id: kubelini14
 
 cluster_ip_range: 10.32.0.0/16
 cluster_ip_range_first_ip: 10.32.0.1 #needed for certificate
@@ -20,7 +20,7 @@ cluster_domain: cluster.local
 #If not, use the first master node in your inventory
 #It can be either an ip address or a hostname, but it must be resolvable for all nodes in the cluster
 #You need to configre this BEFORE you run prep_cluster, as the address/ip will be injected into certificates
-kubernetes_cluster_address: 10.245.22.231
+kubernetes_cluster_address: 10.245.22.147
 
 #Allow Kubernetes worker nodes to swap (can be enabled for lab scenarios)
 allow_swap: no

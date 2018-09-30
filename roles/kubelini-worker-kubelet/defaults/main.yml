@@ -46,3 +46,6 @@ cni_download_url: https://github.com/containernetworking/plugins/releases/downlo
 
 #Setting this to false will disable final wait for node to be ready
 worker_check_ready: true
+
+#If this is configured, the kubelet will be tainted with the value of the parameter. Used for master nodes
+kubelet_register_with_taints: null

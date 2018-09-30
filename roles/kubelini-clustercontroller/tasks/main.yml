@@ -79,6 +79,7 @@
       kubelet_node_labels:
       - "ansible/inventory-hostname={{ inventory_hostname }}"
       - "node-role.kubernetes.io/master=''"
+      kubelet_register_with_taints: 'node-role.kubernetes.io/master=:NoSchedule'
   #end block
 
 - name: template controller-manager config

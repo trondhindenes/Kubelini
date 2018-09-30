@@ -27,6 +27,9 @@ ExecStart=/usr/bin/kubelet \
 {% endif %}
   --serialize-image-pulls={{ kubelet_serialize_image_pulls }} \
   --register-node=true \
+{% if kubelet_register_with_taints %}
+  --register-with-taints={{ kubelet_register_with_taints }} \
+{% endif %}
   --tls-cert-file=/var/lib/kubernetes/{{ inventory_hostname }}.pem \
   --tls-private-key-file=/var/lib/kubernetes/{{ inventory_hostname }}-key.pem \
   --v=2 \
