@@ -36,7 +36,9 @@ kubelet_enable_authentication: yes
 #to use services without an ingress, such as Admission Controller Webhooks.
 #I'll move more of the "controller" (aka master) roles into running-as-pods later.
 #You can transition on-the-fly from systemd-based apiserver to pod-based but not the other way around
-apiserver_run_in_pod: yes
+#NOTE! This feature isn't completely stable yet. The recommendation is to bring up the cluster first using `apiserver_run_in_pod: no` and then switch afterwards.
+#The problem root lies in a circular dependency between the apiserver and flannel pods. Work in progress!!
+apiserver_run_in_pod: no
 
 #Enable cloud integration. You should use set the kubelet_use_ec2_hostname to true if using this.
 apiserver_cloud_provider: aws
