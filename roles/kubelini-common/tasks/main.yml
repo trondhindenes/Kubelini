@@ -45,6 +45,7 @@
   - python-pip
   - socat #needed also
   - util-linux #for nsenter
+  - conntrack
 
 - name: Install aws cli
   pip:

@@ -39,16 +39,20 @@
   template:
     src: node-csr.json.j2
     dest: /opt/kubelini/pki/{{ inventory_hostname }}-csr.json
-  #delegate_to: "{{ groups.kubernetes_master[0] }}"
 
-#- name: read csr contents
-#  slurp:
-#    src: /opt/kubelini/pki/node-csr.json
-#  register: node_csr
-#
-#- name: write csr contents to ca
-#  copy:
-#    content: "{{ node_csr['content'] }}"
-#    dest: "/opt/kubelini/pki/{{ inventory_hostname }}-csr.json"
-#  delegate_to: "{{ groups.kubernetes_master[0] }}"
+- name: template front-proxy csr config
+  template:
+    src: front-proxy-csr.json.j2
+    dest: /opt/kubelini/pki/front-proxy-csr.json
 
+- name: Generate front-proxy cert
+  shell: >
+    cfssl gencert
+    -ca=/opt/kubelini/ca/ca.pem
+    -ca-key=/opt/kubelini/ca/ca-key.pem
+    -config=/opt/kubelini/ca/ca-config.json
+    -profile=kubernetes
+    front-proxy-csr.json | cfssljson -bare front-proxy-client
+  args:
+    chdir: /opt/kubelini/pki
+    creates: front-proxy-client.pem

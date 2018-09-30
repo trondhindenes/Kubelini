@@ -33,32 +33,6 @@
     dest: /var/lib/kubernetes
     state: directory
 
-#- name: Copy cert files to kubernetes folder
-#  copy:
-#    src: "/opt/kubelini/pki/{{ item }}"
-#    dest: "/var/lib/kubernetes/{{ item }}"
-#    remote_src: yes
-#  with_items:
-#  - "{{ inventory_hostname }}-key.pem"
-#  - "{{ inventory_hostname }}.csr"
-#  - "{{ inventory_hostname }}.pem"
-#
-#- name: Copy cert files to kubernetes folder
-#  copy:
-#    src: "/opt/kubelini/ca/{{ item }}"
-#    dest: "/var/lib/kubernetes/{{ item }}"
-#    remote_src: yes
-#  with_items:
-#  - ca.pem
-#  - ca-key.pem
-
-#- name: Copy token file to kubernetes folder
-#  copy:
-#    src: "/opt/kubelini/bootstrap_token/token.csv"
-#    dest: "/var/lib/kubernetes/token.csv"
-#    remote_src: yes
-#  notify: reload kube-apiserver
-
 - name: get local ip address
   set_fact:
     local_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
@@ -84,7 +58,9 @@
   - /etc/kubernetes
   - /etc/kubernetes/manifests
 
-- block: #Prep masters as a kubernetes node
+- name: #Prep masters as a kubernetes node
+  when: apiserver_run_in_pod | bool
+  block:
   - name: Configure PKI for kubelet/worker
     include_role:
       name: kubelini-worker-pki
@@ -103,7 +79,7 @@
       kubelet_node_labels:
       - "ansible/inventory-hostname={{ inventory_hostname }}"
       - "node-role.kubernetes.io/master=''"
-  when: apiserver_run_in_pod | bool
+  #end block
 
 - name: template controller-manager config
   template:

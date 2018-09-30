@@ -30,3 +30,28 @@
 
 - name: Apply kubedns deployment
   shell: kubectl apply -f /opt/kubelini/deployments/dns-deployment.yml
+
+- name: Apply metrics-server
+  when: kubelini_addons_install_metrics_server | bool
+  block:
+  - name: Template metrics-server manifests
+    template:
+      src: "{{ item }}"
+      dest: "/opt/kubelini/deployments/{{ item }}"
+    with_items:
+    - metrics_server_auth_delegator.yml
+    - metrics_server_auth_reader.yml
+    - metrics_server_resource_reader.yml
+    - metrics_server_deployment.yml
+    - metrics_server_service.yml
+    - metrics_server_apiservice.yml
+  - name: apply metrics-server
+    shell: "kubectl apply -f  /opt/kubelini/deployments/{{ item }}"
+    with_items:
+    - metrics_server_auth_delegator.yml
+    - metrics_server_auth_reader.yml
+    - metrics_server_resource_reader.yml
+    - metrics_server_deployment.yml
+    - metrics_server_service.yml
+    - metrics_server_apiservice.yml
+

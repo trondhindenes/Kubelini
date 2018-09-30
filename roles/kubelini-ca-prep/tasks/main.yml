@@ -86,7 +86,6 @@
 - name: Generate admin kubeconfig
   script: generate_admin_kubeconfig.sh "{{ kubernetes_cluster_address }}" "{{ cluster_id }}"
 
-
 - name: Upload ca cert to s3
   s3_sync:
     bucket: "{{ s3_sync_bucket }}"
