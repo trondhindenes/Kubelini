@@ -123,9 +123,10 @@
 
 - name: download docker
   get_url:
-    url: "https://get.docker.com/builds/Linux/x86_64/docker-{{ docker_version }}.tgz"
+    url: "{{ docker_download_url }}"
     dest: /opt/kubelini/docker.tgz
     validate_certs: false
+    force: yes
 
 - name: create docker temp folder
   file:
@@ -151,6 +152,8 @@
     remote_src: yes
     mode: a+x
   with_items: "{{ docker_bin_files['files'] }}"
+  notify:
+  - reload docker service
 
 - name: Make sure /etc/docker exists
   file:

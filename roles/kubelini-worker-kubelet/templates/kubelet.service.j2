@@ -37,6 +37,8 @@ ExecStart=/usr/bin/kubelet \
   --image-gc-high-threshold={{ image_gc_high_threshold }} \
   --pod-manifest-path=/etc/kubernetes/manifests \
   --maximum-dead-containers-per-container={{ maximum_dead_containers_per_container }} \
+  --eviction-hard={{ kubelet_eviction_hard_param }} \
+  --feature-gates=ExperimentalCriticalPodAnnotation=true \
   --hostname-override={{ inventory_hostname }}
 Restart=on-failure
 RestartSec=5

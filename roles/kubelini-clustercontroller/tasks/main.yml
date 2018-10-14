@@ -69,6 +69,7 @@
     template:
       src: kube-apiserver.yml.j2
       dest: /etc/kubernetes/manifests/kube-apiserver.yaml
+    register: kube_apiserver_changed
 
   - name: Configure local kubelet/worker with master taint
     include_role:
@@ -79,6 +80,7 @@
       kubelet_node_labels:
       - "ansible/inventory-hostname={{ inventory_hostname }}"
       - "node-role.kubernetes.io/master=''"
+      - "kubernetes.io/role=master"
       kubelet_register_with_taints: 'node-role.kubernetes.io/master=:NoSchedule'
   #end block
 

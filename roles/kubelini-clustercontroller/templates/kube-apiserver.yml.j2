@@ -10,8 +10,13 @@ metadata:
   name: kube-apiserver
   namespace: kube-system
 spec:
+  hostNetwork: true
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
   containers:
-  - command:
+  - image: k8s.gcr.io/kube-apiserver-amd64:v{{ kubernetes_version }}
+    command:
     - kube-apiserver
     - --advertise-address={{ local_ip }}
     - --allow-privileged=true
@@ -62,7 +67,6 @@ spec:
     - {{_admission_controller_param_name}}={{ apiserver_admission_control_plugins |join(',') }}
 {% endif %}
     - --v={{ apiserver_loglevel }}
-    image: k8s.gcr.io/kube-apiserver-amd64:v{{ kubernetes_version }}
     livenessProbe:
       failureThreshold: 8
       httpGet:

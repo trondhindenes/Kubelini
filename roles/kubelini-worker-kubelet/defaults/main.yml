@@ -1,5 +1,9 @@
 #docker options
 docker_version: 1.13.1
+#Instead of this, you can supply your own docker url such as:
+#https://download.docker.com/linux/static/stable/x86_64/docker-17.06.2-ce.tgz
+#You should do this if using docker version 17.x.x or above.
+docker_download_url: "https://get.docker.com/builds/Linux/x86_64/docker-{{ docker_version }}.tgz"
 docker_storage_driver: overlay2
 
 #kubelet options:
@@ -30,6 +34,7 @@ aws_region: eu-west-1
 #List of labels to add to the node
 kubelet_node_labels:
 - "ansible/inventory-hostname={{ inventory_hostname }}"
+- "kubernetes.io/role=node"
 
 #if true, will enable the following flag in kubelet config:
 #  --authentication-token-webhook
@@ -49,3 +54,5 @@ worker_check_ready: true
 
 #If this is configured, the kubelet will be tainted with the value of the parameter. Used for master nodes
 kubelet_register_with_taints: null
+
+kubelet_eviction_hard_param: "memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%"
