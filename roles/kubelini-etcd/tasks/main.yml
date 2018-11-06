@@ -9,18 +9,18 @@
 
 - name: Download etcd
   get_url:
-    url: https://github.com/coreos/etcd/releases/download/v3.1.4/etcd-v3.1.4-linux-amd64.tar.gz
-    dest: /opt/kubelini/etcd.tar.gz
+    url: https://github.com/coreos/etcd/releases/download/v{{ etcd_version }}/etcd-v{{ etcd_version }}-linux-amd64.tar.gz
+    dest: /opt/kubelini/etcd-v{{ etcd_version }}-linux-amd64.tar.gz
 
 - name: unpack etcd
   unarchive:
-    src: /opt/kubelini/etcd.tar.gz
+    src: /opt/kubelini/etcd-v{{ etcd_version }}-linux-amd64.tar.gz
     dest: /opt/kubelini/etcd
     remote_src: True
 
 - name: Copy etcd to bin
   copy:
-    src: "/opt/kubelini/etcd/etcd-v3.1.4-linux-amd64/{{ item }}"
+    src: "/opt/kubelini/etcd/etcd-v{{ etcd_version }}-linux-amd64/{{ item }}"
     dest: "/usr/bin/{{ item }}"
     remote_src: yes
     mode: a+x

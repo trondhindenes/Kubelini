@@ -1,2 +1,3 @@
 kubelini_etcd_auto_compaction_retention_enabled: false
 kubelini_etcd_auto_compaction_retention_value: 1
+etcd_version: 3.1.4
