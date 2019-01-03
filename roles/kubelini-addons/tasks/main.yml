@@ -20,6 +20,11 @@
     src: dns-deployment.yml.j2
     dest: /opt/kubelini/deployments/dns-deployment.yml
 
+- name: template kube-proxy deployment
+  template:
+    src: node-proxy.yml
+    dest: /opt/kubelini/deployments/node-proxy.yml
+
 - name: Apply weave deployment
   shell: kubectl apply -f /opt/kubelini/deployments/weavenet-config.yml
   when: networking_stack == 'weavenet'
@@ -27,6 +32,9 @@
 - name: Apply flannel deployment
   shell: kubectl apply -f /opt/kubelini/deployments/flannel-config.yml
   when: networking_stack == 'flannel'
+
+- name: Apply kube-proxy deployment
+  shell: kubectl apply -f /opt/kubelini/deployments/node-proxy.yml
 
 - name: Apply kubedns deployment
   shell: kubectl apply -f /opt/kubelini/deployments/dns-deployment.yml
