@@ -1,1 +1,2 @@
 kubelini_addons_install_metrics_server: no
+flannel_docker_image: quay.io/coreos/flannel:v0.9.1-amd64

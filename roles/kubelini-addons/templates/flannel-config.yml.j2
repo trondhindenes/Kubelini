@@ -107,7 +107,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni
-        image: quay.io/coreos/flannel:v0.9.1-amd64
+        image: "{{ flannel_docker_image }}"
         command:
         - cp
         args:
