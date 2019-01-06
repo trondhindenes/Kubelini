@@ -88,6 +88,11 @@ metadata:
     tier: node
     app: flannel
 spec:
+  minReadySeconds: 120
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
       annotations:
@@ -121,7 +126,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: quay.io/coreos/flannel:v0.9.1-amd64
+        image: "{{ flannel_docker_image }}"
         command:
         - /opt/bin/flanneld
         args:
