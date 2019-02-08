@@ -30,7 +30,7 @@
     dest: /opt/kubelini/ca/ca-csr.json
 
 - name: Download ca cert from s3 if it exists
-  s3:
+  aws_s3:
     bucket: "{{ s3_sync_bucket }}"
     object: "{{ cluster_id }}/ca/{{ item }}"
     dest: "/opt/kubelini/ca/{{ item }}"

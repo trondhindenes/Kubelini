@@ -14,7 +14,7 @@
     state: directory
 
 #- name: Get the node cert files
-#  s3:
+#  aws_s3:
 #    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
 #    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
 #    bucket: "{{ s3_sync_bucket }}"
@@ -28,7 +28,7 @@
 #  - "{{ inventory_hostname }}.pem"
 
 - name: Get the ca file
-  s3:
+  aws_s3:
     aws_access_key: "{{ aws_access_key_id | default(omit) }}"
     aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     bucket: "{{ s3_sync_bucket }}"
@@ -38,7 +38,7 @@
     overwrite: different
 
 - name: Get the ca key file
-  s3:
+  aws_s3:
     aws_access_key: "{{ aws_access_key_id | default(omit) }}"
     aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     bucket: "{{ s3_sync_bucket }}"
@@ -48,7 +48,7 @@
     overwrite: different
 
 - name: Get the admin kubeconfig
-  s3:
+  aws_s3:
     aws_access_key: "{{ aws_access_key_id | default(omit) }}"
     aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
     bucket: "{{ s3_sync_bucket }}"
@@ -60,7 +60,7 @@
 
 
 #- name: Get the kubeconfig files
-#  s3:
+#  aws_s3:
 #    aws_access_key: "{{ aws_access_key_id | default(omit) }}"
 #    aws_secret_key: "{{ aws_secret_access_key | default(omit) }}"
 #    bucket: "{{ s3_sync_bucket }}"
